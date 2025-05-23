@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    environment:
+      - MONGO_URI=mongodb://db:27017/store
+      - CLOUDINARY_CLOUD_NAME=dqxndwzkf
+      - CLOUDINARY_API_KEY=973275962968365
+      - CLOUDINARY_API_SECRET=im6yZGzmSXr2IcxND8DCPTrIrd4
+      - ZALOPAY_APP_ID=2553
+      - ZALOPAY_KEY1=PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL
+      - ZALOPAY_KEY2=kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz
+      - ZALOPAY_CREATE_ENDPOINT=https://sb-openapi.zalopay.vn/v2/create
+      - ZALOPAY_QUERY_ENDPOINT=https://sb-openapi.zalopay.vn/v2/query
+      - JWT_SECRET=daylamotchuoiratdainhungkhongduocdoanramatkhaucuaban
+      - JWT_EXPIRES_IN=7d
+    depends_on:
+      - db
+  db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - db_data:/data/db
+
+volumes:
+  db_data:
