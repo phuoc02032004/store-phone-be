@@ -33,7 +33,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     required: true,
-    enum: ['COD', 'BANKING','ZaloPay'] // Cash on delivery or Bank transfer
+    enum: ['COD', 'BANKING','ZaloPay'] 
   },
   paymentStatus: {
     type: String,

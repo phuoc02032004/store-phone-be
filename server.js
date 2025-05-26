@@ -13,6 +13,7 @@ const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const zalopayRoutes = require('./routes/zalopayRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 
@@ -61,6 +62,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/zaloPay', zalopayRoutes);
+app.use('/api/products', reviewRoutes);
 
 const PORT = process.env.PORT || 5000;
 

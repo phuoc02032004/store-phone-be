@@ -183,9 +183,51 @@ const promoteToAdmin = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Change user password
+ * @route   /api/auth/changepassword
+ * @access  Private
+ */
+const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ status: 'error', message: 'Vui lòng cung cấp đủ thông tin: oldPassword, newPassword' });
+    }
+    if (newPassword.length < 4) {
+      return res.status(400).json({ status: 'error', message: 'Mật khẩu mới phải có ít nhất 4 ký tự.' });
+    }
+
+    // Find user
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'User not found' });
+    }
+
+    // Check old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ status: 'error', message: 'Mật khẩu cũ không chính xác.' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.status(200).json({ status: 'success', message: 'Mật khẩu đã được thay đổi thành công.' });
+  } catch (error) {
+    console.error('Change Password Error:', error);
+    res.status(500).json({ status: 'error', message: 'Server Error' });
+  }
+};
+
 module.exports = {
   login,
   register,
   getProfile,
-  promoteToAdmin
+  promoteToAdmin,
+  changePassword
 };

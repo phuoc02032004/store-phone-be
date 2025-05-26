@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { login, register, getProfile, promoteToAdmin } = require('../controllers/authController');
+const { login, register, getProfile, promoteToAdmin, changePassword } = require('../controllers/authController');
 const { auth, adminAuth } = require('../middlewares/authMiddleware');
 
 /**
@@ -179,6 +179,54 @@ router.get('/profile', auth, getProfile);
  *       500:
  *         description: Server error
  */
-router.put('/promote/:id', auth, adminAuth, promoteToAdmin);
+
+/**
+ * @swagger
+ * /api/auth/changepassword:
+ *   patch:
+ *     summary: Change user password
+ *     description: Change the password of the authenticated user.
+ *     tags: [Auth]
+ *     security:
+ *      - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *                 format: password
+ *                 description: Old password
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 description: New password
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Mật khẩu đã được thay đổi thành công.
+ *       400:
+ *         description: Invalid input or old password incorrect
+ *       401:
+ *         description: Not authorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+router.patch('/changepassword', auth, changePassword);
 
 module.exports = router;

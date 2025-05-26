@@ -108,6 +108,7 @@ exports.createOrder = async (req, res) => {
       items: orderItems,
       shippingAddress,
       paymentMethod,
+      paymentStatus: paymentMethod === 'COD' ? 'PAID' : 'PENDING', // Set to PAID if COD, otherwise PENDING
       totalAmount,
       notes
     });
@@ -183,3 +184,4 @@ exports.cancelOrder = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
