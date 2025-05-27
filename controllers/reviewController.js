@@ -8,15 +8,19 @@ const Order = require('../models/Order');
 // @route   POST /api/products/:id/reviews
 // @access  Private
 const createProductReview = asyncHandler(async (req, res) => {
-  const { rating, comment } = req.body;
+  const { rating, comment } = req.body; // Remove variantId from req.body
 
   const product = await Product.findById(req.params.id);
 
   if (product) {
     const query = {
       user: req.user._id,
-      items: { $elemMatch: { product: new mongoose.Types.ObjectId(req.params.id) } },
-      paymentStatus: 'PAID', 
+      items: {
+        $elemMatch: {
+          product: new mongoose.Types.ObjectId(req.params.id)
+        }
+      },
+      paymentStatus: 'PENDING',
     };
     console.log('Order.findOne Query:', JSON.stringify(query, null, 2));
     const hasPurchased = await Order.findOne(query);

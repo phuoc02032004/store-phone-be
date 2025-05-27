@@ -132,11 +132,49 @@ exports.getProductById = async (req, res) => {
 // @access  Private/Admin
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, price, category: categoryId, stock, isNewArrival, isBestSeller } = req.body;
+    const { name, description, category: categoryId, isNewArrival, isBestSeller } = req.body;
+    let variants = req.body.variants;
+    try {
+      if (typeof variants === 'string') {
+        variants = JSON.parse(variants);
+      }
+    } catch (parseError) {
+      return res.status(400).json({ message: 'Dữ liệu biến thể sản phẩm không hợp lệ, phải là định dạng JSON.' });
+    }
 
     // Kiểm tra các trường bắt buộc
-    if (!name || !price || !categoryId) {
-        return res.status(400).json({ message: 'Vui lòng cung cấp tên, giá và ID danh mục.' });
+    if (!name || !categoryId || !variants || !Array.isArray(variants) || variants.length === 0) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp tên, ID danh mục và ít nhất một biến thể sản phẩm.' });
+    }
+
+    // Kiểm tra các biến thể
+    for (const variant of variants) {
+      if (typeof variant.price !== 'number' || variant.price <= 0) {
+        return res.status(400).json({ message: 'Mỗi biến thể phải có giá hợp lệ và lớn hơn 0.' });
+      }
+      if (typeof variant.stock !== 'number' || variant.stock < 0) {
+        return res.status(400).json({ message: 'Mỗi biến thể phải có số lượng tồn kho hợp lệ.' });
+      }
+      if (!variant.color) {
+        return res.status(400).json({ message: 'Mỗi biến thể phải có màu sắc.' });
+      }
+      if (!variant.capacity) {
+        return res.status(400).json({ message: 'Mỗi biến thể phải có dung lượng.' });
+      }
+      // Tạo SKU cho biến thể
+      variant.sku = `${name.substring(0, 3).toUpperCase()}-${variant.color.substring(0, 3).toUpperCase()}-${variant.capacity.replace(/\s+/g, '')}-${Date.now()}`;
+    }
+
+    // Kiểm tra trùng lặp biến thể
+    const variantCombinations = new Set();
+    for (const variant of variants) {
+      const combination = `${variant.color}-${variant.capacity}`;
+      if (variantCombinations.has(combination)) {
+        return res.status(400).json({ 
+          message: `Không thể có hai biến thể giống nhau (Màu: ${variant.color}, Dung lượng: ${variant.capacity})`
+        });
+      }
+      variantCombinations.add(combination);
     }
 
     // Kiểm tra định dạng categoryId
@@ -166,10 +204,9 @@ exports.createProduct = async (req, res) => {
     }    const product = new Product({
       name,
       description,
-      price,
       category: categoryId, // categoryId đã được xác thực là ObjectId hợp lệ (về mặt định dạng)
-      stock,
       image: imageUrl,
+      variants,
       isNewArrival: isNewArrival === 'true' || isNewArrival === true,
       isBestSeller: isBestSeller === 'true' || isBestSeller === true,
       // imagePublicId: imagePublicId, // Lưu public_id nếu bạn muốn xóa ảnh khỏi Cloudinary sau này
@@ -203,7 +240,8 @@ exports.updateProduct = async (req, res) => {
 
     if (!product) {
       return res.status(404).json({ message: 'Sản phẩm không tìm thấy' });
-    }    const { name, description, price, category: categoryId, stock, isNewArrival, isBestSeller } = req.body;
+    }    const { name, description, category: categoryId, isNewArrival, isBestSeller } = req.body;
+    let variants = req.body.variants;
 
     // Kiểm tra và validate categoryId chỉ khi nó được gửi lên
     if (categoryId && categoryId !== 'string' && categoryId !== '') {
@@ -234,8 +272,50 @@ exports.updateProduct = async (req, res) => {
       }
     }    product.name = name || product.name;
     product.description = description || product.description;
-    product.price = price || product.price;
-    product.stock = stock !== undefined ? stock : product.stock; // Cho phép stock = 0
+    if (variants) {
+      try {
+        if (typeof variants === 'string') {
+          variants = JSON.parse(variants);
+        }
+      } catch (parseError) {
+        return res.status(400).json({ message: 'Dữ liệu biến thể sản phẩm không hợp lệ, phải là định dạng JSON.' });
+      }
+      if (!Array.isArray(variants) || variants.length === 0) {
+        return res.status(400).json({ message: 'Biến thể sản phẩm phải là một mảng không rỗng.' });
+      }
+      for (const variant of variants) {
+        if (typeof variant.price !== 'number' || variant.price <= 0) {
+          return res.status(400).json({ message: 'Mỗi biến thể phải có giá hợp lệ và lớn hơn 0.' });
+        }
+        if (typeof variant.stock !== 'number' || variant.stock < 0) {
+          return res.status(400).json({ message: 'Mỗi biến thể phải có số lượng tồn kho hợp lệ.' });
+        }
+        if (!variant.color) {
+          return res.status(400).json({ message: 'Mỗi biến thể phải có màu sắc.' });
+        }
+        if (!variant.capacity) {
+          return res.status(400).json({ message: 'Mỗi biến thể phải có dung lượng.' });
+        }
+        
+        // Nếu không có SKU (biến thể mới), tạo SKU mới
+        if (!variant.sku) {
+          variant.sku = `${product.name.substring(0, 3).toUpperCase()}-${variant.color.substring(0, 3).toUpperCase()}-${variant.capacity.replace(/\s+/g, '')}-${Date.now()}`;
+        }
+      }
+
+      // Kiểm tra trùng lặp biến thể
+      const variantCombinations = new Set();
+      for (const variant of variants) {
+        const combination = `${variant.color}-${variant.capacity}`;
+        if (variantCombinations.has(combination)) {
+          return res.status(400).json({ 
+            message: `Không thể có hai biến thể giống nhau (Màu: ${variant.color}, Dung lượng: ${variant.capacity})`
+          });
+        }
+        variantCombinations.add(combination);
+      }
+      product.variants = variants;
+    }
     product.isNewArrival = isNewArrival !== undefined ? (isNewArrival === 'true' || isNewArrival === true) : product.isNewArrival;
     product.isBestSeller = isBestSeller !== undefined ? (isBestSeller === 'true' || isBestSeller === true) : product.isBestSeller;
 

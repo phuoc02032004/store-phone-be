@@ -22,7 +22,6 @@ const auth = async (req, res, next) => {
     }
 
     req.user = user;
-    console.log('Admin User:', req.user);
     next();
   } catch (error) {
     console.error(error);

@@ -1,5 +1,36 @@
 const mongoose = require('mongoose');
 
+const productVariantSchema = new mongoose.Schema({
+  color: {
+    type: String,
+    required: true
+  },
+  capacity: {
+    type: String,
+    required: true
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  stock: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0
+  },
+  sku: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  image: {
+    type: String,
+    required: false
+  }
+}, { _id: true });
+
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -9,22 +40,14 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  price: {
-    type: Number,
-    required: true
-  },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: true
   },
   image: {
-    type: String, 
+    type: String,
     required: false
-  },
-  stock: {
-    type: Number,
-    default: 0
   },
   isNewArrival: {
     type: Boolean,
@@ -50,6 +73,7 @@ const productSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  variants: [productVariantSchema],
   createdAt: {
     type: Date,
     default: Date.now

@@ -61,7 +61,6 @@ exports.getOrderById = async (req, res) => {
 // @route   POST /api/orders
 // @access  Private
 exports.createOrder = async (req, res) => {
-  console.log('Creating order with body:', req.body);
   try {
     const { items, shippingAddress, paymentMethod, notes, appliedCoupon: couponCode, shippingFee } = req.body;
 
@@ -74,36 +73,43 @@ exports.createOrder = async (req, res) => {
     const orderItems = [];
 
     for (const item of items) {
-      const product = await Product.findById(item.product).populate('category', 'name');
+      const product = await Product.findById(item.product);
       if (!product) {
         return res.status(400).json({ message: `Product with ID ${item.product} not found` });
       }
 
-      // Check if product is available
-      if (!product.stock || product.stock === 0) {
-        return res.status(400).json({ 
-          message: `Product "${product.name}" is out of stock` 
+      // Find the specific variant
+      const variant = product.variants.id(item.variantId);
+      if (!variant) {
+        return res.status(400).json({ message: `Variant with ID ${item.variantId} not found for product ${product.name}` });
+      }
+
+      // Check if variant is available
+      if (variant.stock === 0) {
+        return res.status(400).json({
+          message: `Product "${product.name}" - Variant "${variant.variantName}" is out of stock`
         });
       }
 
-      // Check if requested quantity is available
-      if (product.stock < item.quantity) {
-        return res.status(400).json({ 
-          message: `Not enough stock for "${product.name}". Requested: ${item.quantity}, Available: ${product.stock}` 
+      // Check if requested quantity is available for the variant
+      if (variant.stock < item.quantity) {
+        return res.status(400).json({
+          message: `Not enough stock for "${product.name}" - Variant "${variant.variantName}". Requested: ${item.quantity}, Available: ${variant.stock}`
         });
       }
 
       orderItems.push({
         product: item.product,
+        variantId: item.variantId, // Store variant ID in order item
         quantity: item.quantity,
-        price: product.price
+        price: variant.price // Use variant's price
       });
 
-      totalAmount += product.price * item.quantity;
+      totalAmount += variant.price * item.quantity;
 
-      // Update stock
-      product.stock -= item.quantity;
-      await product.save();
+      // Update variant stock
+      variant.stock -= item.quantity;
+      await product.save(); // Save the product to persist variant changes
     }
 
     let appliedCoupon = null;
@@ -229,12 +235,15 @@ exports.cancelOrder = async (req, res) => {
       return res.status(400).json({ message: 'Order cannot be cancelled' });
     }
 
-    // Restore product stock
+    // Restore product variant stock
     for (const item of order.items) {
       const product = await Product.findById(item.product);
       if (product) {
-        product.stock += item.quantity;
-        await product.save();
+        const variant = product.variants.id(item.variantId);
+        if (variant) {
+          variant.stock += item.quantity;
+          await product.save(); // Save the product to persist variant changes
+        }
       }
     }
 

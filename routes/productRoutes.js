@@ -16,12 +16,45 @@ const upload = require('../middlewares/uploadMiddleware');
  * @swagger
  * components:
  *   schemas:
+ *     ProductVariant:
+ *       type: object
+ *       required:
+ *         - color
+ *         - capacity
+ *         - price
+ *         - stock
+ *         - sku
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Auto-generated variant ID
+ *         color:
+ *           type: string
+ *           description: Color of the variant
+ *         capacity:
+ *           type: string
+ *           description: Storage capacity of the variant
+ *         price:
+ *           type: number
+ *           description: Price of this variant
+ *           minimum: 0
+ *         stock:
+ *           type: number
+ *           description: Stock quantity of this variant
+ *           minimum: 0
+ *         sku:
+ *           type: string
+ *           description: Stock Keeping Unit - unique identifier for this variant
+ *         image:
+ *           type: string
+ *           description: Image URL specific to this variant (optional)
  *     Product:
  *       type: object
  *       required:
  *         - name
- *         - price
+ *         - description
  *         - category
+ *         - variants
  *       properties:
  *         _id:
  *           type: string
@@ -32,18 +65,17 @@ const upload = require('../middlewares/uploadMiddleware');
  *         description:
  *           type: string
  *           description: Product description
- *         price:
- *           type: number
- *           description: Product price
  *         category:
  *           type: string
  *           description: Category ID
  *         image:
  *           type: string
- *           description: Product image URL
- *         stock:
- *           type: number
- *           description: Product stock quantity
+ *           description: Main product image URL
+ *         variants:
+ *           type: array
+ *           description: Array of product variants with different colors and capacities
+ *           items:
+ *             $ref: '#/components/schemas/ProductVariant'
  *         isNewArrival:
  *           type: boolean
  *           description: Indicates if the product is a new arrival
@@ -291,19 +323,37 @@ router.get('/category/:category', getProductsByCategory);
  *               description:
  *                 type: string
  *                 description: Product description
- *               price:
- *                 type: number
- *                 description: Product price
  *               category:
  *                 type: string
  *                 description: Category ID
- *               stock:
- *                 type: number
- *                 description: Product stock quantity
+ *               variants:
+ *                 type: array
+ *                 description: Array of product variants
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     color:
+ *                       type: string
+ *                       description: Color of the variant
+ *                     capacity:
+ *                       type: string
+ *                       description: Storage capacity of the variant
+ *                     price:
+ *                       type: number
+ *                       description: Price of this variant
+ *                       minimum: 0
+ *                     stock:
+ *                       type: number
+ *                       description: Stock quantity of this variant
+ *                       minimum: 0
+ *                     image:
+ *                       type: string
+ *                       format: binary
+ *                       description: Image specific to this variant (optional)
  *               image:
  *                 type: string
  *                 format: binary
- *                 description: Product image file
+ *                 description: Main product image file
  *               isNewArrival:
  *                 type: boolean
  *                 description: Set if the product is a new arrival
@@ -312,8 +362,9 @@ router.get('/category/:category', getProductsByCategory);
  *                 description: Set if the product is a best seller
  *             required:
  *               - name
- *               - price
+ *               - description
  *               - category
+ *               - variants
  *     responses:
  *       201:
  *         description: Product created successfully
@@ -352,15 +403,39 @@ router.post('/', auth, adminAuth, upload.single('image'), createProduct);
  *                 type: string
  *               description:
  *                 type: string
- *               price:
- *                 type: number
  *               category:
  *                 type: string
- *               stock:
- *                 type: number
+ *               variants:
+ *                 type: array
+ *                 description: Array of product variants
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     color:
+ *                       type: string
+ *                       description: Color of the variant
+ *                     capacity:
+ *                       type: string
+ *                       description: Storage capacity of the variant
+ *                     price:
+ *                       type: number
+ *                       description: Price of this variant
+ *                       minimum: 0
+ *                     stock:
+ *                       type: number
+ *                       description: Stock quantity of this variant
+ *                       minimum: 0
+ *                     sku:
+ *                       type: string
+ *                       description: Existing SKU (for updating existing variants)
+ *                     image:
+ *                       type: string
+ *                       format: binary
+ *                       description: Image specific to this variant (optional)
  *               image:
  *                 type: string
  *                 format: binary
+ *                 description: Main product image
  *               isNewArrival:
  *                 type: boolean
  *                 description: Set if the product is a new arrival
