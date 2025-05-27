@@ -7,17 +7,15 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ message: 'Not authorized, no token' });
     }
 
-    // Get token from header
     const token = req.headers.authorization.split(' ')[1];
+    console.log('Token:', token);
 
     if (!token) {
       return res.status(401).json({ message: 'Not authorized, no token' });
     }
 
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Get user from token
     const user = await User.findById(decoded.id).select('-password');
     
     if (!user) {
@@ -25,6 +23,7 @@ const auth = async (req, res, next) => {
     }
 
     req.user = user;
+    console.log('Admin User:', req.user);
     next();
   } catch (error) {
     console.error(error);
@@ -32,8 +31,8 @@ const auth = async (req, res, next) => {
   }
 };
 
-const adminAuth = async (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+const adminAuth = (req, res, next) => {
+  if (req.user && (req.user.isAdmin || req.user.role === 'admin')) {
     next();
   } else {
     res.status(403).json({ message: 'Not authorized as an admin' });

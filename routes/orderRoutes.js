@@ -65,7 +65,7 @@ const { auth, adminAuth } = require('../middlewares/authMiddleware');
  *           $ref: '#/components/schemas/ShippingAddress'
  *         paymentMethod:
  *           type: string
- *           enum: [COD, BANKING]
+ *           enum: [COD, BANKING, ZaloPay]
  *         paymentStatus:
  *           type: string
  *           enum: [PENDING, PAID, FAILED]
@@ -74,6 +74,21 @@ const { auth, adminAuth } = require('../middlewares/authMiddleware');
  *           enum: [PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED]
  *         totalAmount:
  *           type: number
+ *         shippingFee:
+ *           type: number
+ *           description: Shipping fee for the order
+ *         isFreeShipping:
+ *           type: boolean
+ *           description: Indicates if free shipping is applied
+ *         appliedCoupon:
+ *           type: string
+ *           description: ID of the applied coupon
+ *         discountAmount:
+ *           type: number
+ *           description: Discount amount applied by coupon
+ *         finalAmount:
+ *           type: number
+ *           description: Final amount after discounts and shipping
  *         notes:
  *           type: string
  *         createdAt:
@@ -193,9 +208,15 @@ router.get('/:id', auth, getOrderById);
  *                 $ref: '#/components/schemas/ShippingAddress'
  *               paymentMethod:
  *                 type: string
- *                 enum: [COD, BANKING]
+ *                 enum: [COD, BANKING, ZaloPay]
  *               notes:
  *                 type: string
+ *               couponCode:
+ *                 type: string
+ *                 description: Optional coupon code to apply
+ *               shippingFee:
+ *                 type: number
+ *                 description: Optional shipping fee
  *     responses:
  *       201:
  *         description: Order created successfully

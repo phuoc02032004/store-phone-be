@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const Category = require('./models/Category');
 const Product = require('./models/Product');
+const Coupon = require('./models/Coupon');
+const Review = require('./models/Review');
 require('dotenv').config();
 
 const seedCategories = async () => {
@@ -122,6 +124,143 @@ const seedProducts = async (categories) => {
   }
 };
 
+const seedCoupons = async () => {
+  try {
+    console.log('Seeding coupons...');
+
+    const coupons = [
+      {
+        code: 'SALE20',
+        type: 'PERCENTAGE_DISCOUNT',
+        value: 20,
+        minOrderValue: 500000,
+        maxDiscountValue: 200000,
+        startDate: new Date(Date.now() - 86400000), // Yesterday
+        endDate: new Date(Date.now() + 86400000 * 30), // 30 days from now
+        usageLimit: 100,
+        usageLimitPerUser: 1,
+        isActive: true
+      },
+      {
+        code: 'FREESHIP',
+        type: 'FREE_SHIPPING',
+        value: 0,
+        minOrderValue: 1000000,
+        startDate: new Date(Date.now() - 86400000),
+        endDate: new Date(Date.now() + 86400000 * 60),
+        usageLimit: 50,
+        usageLimitPerUser: 1,
+        isActive: true
+      },
+      {
+        code: 'FIXED100K',
+        type: 'FIXED_AMOUNT_DISCOUNT',
+        value: 100000,
+        minOrderValue: 1000000,
+        startDate: new Date(Date.now() - 86400000),
+        endDate: new Date(Date.now() + 86400000 * 90),
+        usageLimit: 200,
+        usageLimitPerUser: null,
+        isActive: true
+      },
+      {
+        code: 'SUMMER2025',
+        type: 'PERCENTAGE_DISCOUNT',
+        value: 15,
+        minOrderValue: 750000,
+        maxDiscountValue: 150000,
+        startDate: new Date(Date.now() + 86400000 * 10), // Starts in 10 days
+        endDate: new Date(Date.now() + 86400000 * 40), // Ends in 40 days
+        usageLimit: 200,
+        usageLimitPerUser: 1,
+        isActive: true
+      },
+      {
+        code: 'NEWUSER50',
+        type: 'FIXED_AMOUNT_DISCOUNT',
+        value: 50000,
+        minOrderValue: 300000,
+        startDate: new Date(Date.now() - 86400000 * 5), // Started 5 days ago
+        endDate: new Date(Date.now() + 86400000 * 25), // Ends in 25 days
+        usageLimit: 500,
+        usageLimitPerUser: 1,
+        isActive: true
+      }
+    ];
+
+    for (const coupon of coupons) {
+      const existingCoupon = await Coupon.findOne({ code: coupon.code });
+      if (!existingCoupon) {
+        await Coupon.create(coupon);
+        console.log(`Created coupon: ${coupon.code}`);
+      } else {
+        console.log(`Coupon ${coupon.code} already exists`);
+      }
+    }
+
+    console.log('Coupons seeded successfully!');
+  } catch (error) {
+    console.error('Error seeding coupons:', error);
+    throw error;
+  }
+};
+
+const seedReviews = async () => {
+  try {
+    console.log('Seeding reviews...');
+
+    const users = await User.find({});
+    const products = await Product.find({});
+
+    if (users.length === 0 || products.length === 0) {
+      console.log('No users or products found to seed reviews. Skipping review seeding.');
+      return;
+    }
+
+    const reviews = [
+      {
+        user: users[0]._id,
+        product: products[0]._id, // iPhone 14 Pro Max
+        rating: 5,
+        comment: 'Sản phẩm tuyệt vời, camera chụp ảnh rất đẹp!'
+      },
+      {
+        user: users[1]._id, // Assuming there's a second user or create one
+        product: products[0]._id,
+        rating: 4,
+        comment: 'Pin dùng khá tốt, thiết kế sang trọng.'
+      },
+      {
+        user: users[0]._id,
+        product: products[3]._id, // MacBook Pro 16"
+        rating: 5,
+        comment: 'Hiệu năng mạnh mẽ, màn hình sắc nét, rất phù hợp cho công việc đồ họa.'
+      },
+      {
+        user: users[1]._id,
+        product: products[4]._id, // MacBook Air M2
+        rating: 4,
+        comment: 'Nhẹ và mỏng, tiện lợi mang đi lại. Chip M2 rất nhanh.'
+      }
+    ];
+
+    for (const reviewData of reviews) {
+      const existingReview = await Review.findOne({ user: reviewData.user, product: reviewData.product });
+      if (!existingReview) {
+        await Review.create(reviewData);
+        console.log(`Created review for product ${reviewData.product} by user ${reviewData.user}`);
+      } else {
+        console.log(`Review for product ${reviewData.product} by user ${reviewData.user} already exists`);
+      }
+    }
+
+    console.log('Reviews seeded successfully!');
+  } catch (error) {
+    console.error('Error seeding reviews:', error);
+    throw error;
+  }
+};
+
 const seedAll = async () => {
   let connection;
   try {
@@ -129,7 +268,8 @@ const seedAll = async () => {
     connection = await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
-    });    console.log('Connected successfully to MongoDB');
+    });
+    console.log('Connected successfully to MongoDB');
 
     // Seed admin user
     const adminUser = await User.findOne({ role: 'admin' });
@@ -161,6 +301,12 @@ const seedAll = async () => {
     
     // Seed products
     await seedProducts(categories);
+
+    // Seed coupons
+    await seedCoupons();
+
+    // Seed reviews
+    await seedReviews();
 
   } catch (error) {
     console.error('Error in seeding:', error);

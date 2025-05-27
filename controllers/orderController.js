@@ -1,5 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const Coupon = require('../models/Coupon');
+const UserCoupon = require('../models/UserCoupon');
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -60,7 +62,7 @@ exports.getOrderById = async (req, res) => {
 // @access  Private
 exports.createOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod, notes } = req.body;
+    const { items, shippingAddress, paymentMethod, notes, couponCode, shippingFee } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'No order items' });
@@ -103,17 +105,79 @@ exports.createOrder = async (req, res) => {
       await product.save();
     }
 
+    let appliedCoupon = null;
+    let discountAmount = 0;
+    let isFreeShipping = false;
+    let finalShippingFee = shippingFee || 0;
+
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode });
+
+      if (!coupon) {
+        return res.status(400).json({ message: 'Invalid coupon code' });
+      }
+
+      // Check if coupon is active and valid
+      if (!coupon.isValid()) {
+        return res.status(400).json({ message: 'Coupon is not valid or expired' });
+      }
+
+      // Check usage limit per user
+      const userCouponCount = await UserCoupon.countDocuments({ userId: req.user._id, couponId: coupon._id });
+      if (coupon.usageLimitPerUser !== null && userCouponCount >= coupon.usageLimitPerUser) {
+        return res.status(400).json({ message: 'You have reached the usage limit for this coupon' });
+      }
+
+      // Check minimum order value
+      if (coupon.minOrderValue && totalAmount < coupon.minOrderValue) {
+        return res.status(400).json({ message: `Minimum order value for this coupon is ${coupon.minOrderValue}` });
+      }
+
+      // Apply discount based on coupon type
+      if (coupon.type === 'PERCENTAGE_DISCOUNT') {
+        discountAmount = totalAmount * (coupon.value / 100);
+        if (coupon.maxDiscountValue && discountAmount > coupon.maxDiscountValue) {
+          discountAmount = coupon.maxDiscountValue;
+        }
+      } else if (coupon.type === 'FIXED_AMOUNT_DISCOUNT') {
+        discountAmount = coupon.value;
+      } else if (coupon.type === 'FREE_SHIPPING') {
+        isFreeShipping = true;
+        finalShippingFee = 0;
+      }
+      // For BUY_X_GET_Y and PRODUCT_GIFT, additional logic would be needed
+      // to adjust order items or add gift products, which is more complex
+      // and might require changes to the orderItemSchema or a separate gift item schema.
+      // For now, we'll just apply the discount if any.
+
+      appliedCoupon = coupon._id;
+    }
+
     const order = new Order({
       user: req.user._id,
       items: orderItems,
       shippingAddress,
       paymentMethod,
-      paymentStatus: paymentMethod === 'COD' ? 'PAID' : 'PENDING', // Set to PAID if COD, otherwise PENDING
+      paymentStatus: paymentMethod === 'COD' || paymentMethod === 'ZaloPay' ? 'PENDING' : 'PENDING',
       totalAmount,
-      notes
+      shippingFee: finalShippingFee,
+      isFreeShipping,
+      appliedCoupon,
+      discountAmount,
+      notes,
+      finalAmount: totalAmount - discountAmount + finalShippingFee
     });
 
     const createdOrder = await order.save();
+
+    // If a coupon was applied, record its usage for the user
+    if (appliedCoupon) {
+      const userCoupon = new UserCoupon({
+        userId: req.user._id,
+        couponId: appliedCoupon
+      });
+      await userCoupon.save();
+    }
 
     res.status(201).json(createdOrder);
   } catch (error) {

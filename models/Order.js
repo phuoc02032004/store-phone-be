@@ -51,6 +51,27 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  shippingFee: {
+    type: Number,
+    default: 0
+  },
+  isFreeShipping: {
+    type: Boolean,
+    default: false
+  },
+  appliedCoupon: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Coupon',
+    default: null
+  },
+  discountAmount: {
+    type: Number,
+    default: 0
+  },
+  finalAmount: {
+    type: Number,
+    required: true
+  },
   notes: {
     type: String
   }
@@ -58,13 +79,23 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Tính tổng giá trị đơn hàng trước khi lưu
+// Tính tổng giá trị đơn hàng và áp dụng giảm giá/phí vận chuyển trước khi lưu
 orderSchema.pre('save', function(next) {
+  let subtotal = 0;
   if (this.items && this.items.length > 0) {
-    this.totalAmount = this.items.reduce((total, item) => {
+    subtotal = this.items.reduce((total, item) => {
       return total + (item.price * item.quantity);
     }, 0);
   }
+  this.totalAmount = subtotal;
+
+  let calculatedShippingFee = this.shippingFee;
+  if (this.isFreeShipping) {
+    calculatedShippingFee = 0;
+  }
+
+  this.finalAmount = this.totalAmount - this.discountAmount + calculatedShippingFee;
+
   next();
 });
 

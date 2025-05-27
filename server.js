@@ -14,6 +14,8 @@ const authRoutes = require('./routes/authRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const zalopayRoutes = require('./routes/zalopayRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const userCouponRoutes = require('./routes/userCouponRoutes');
+const couponRoutes = require('./routes/couponRoutes');
 
 const app = express();
 
@@ -63,6 +65,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/zaloPay', zalopayRoutes);
 app.use('/api/products', reviewRoutes);
+app.use('/api/user-coupons', userCouponRoutes);
+app.use('/api/coupons', couponRoutes);
 
 const PORT = process.env.PORT || 5000;
 
