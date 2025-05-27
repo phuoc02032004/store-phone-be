@@ -130,6 +130,17 @@ const seedCoupons = async () => {
 
     const coupons = [
       {
+        code: 'WELCOME100K',
+        type: 'FIXED_AMOUNT_DISCOUNT',
+        value: 100000,
+        minOrderValue: 500000,
+        startDate: new Date(Date.now() - 86400000 * 7), // 7 days ago
+        endDate: new Date(Date.now() + 86400000 * 90), // 90 days from now
+        usageLimit: 500,
+        usageLimitPerUser: 1,
+        isActive: true
+      },
+      {
         code: 'SALE20',
         type: 'PERCENTAGE_DISCOUNT',
         value: 20,

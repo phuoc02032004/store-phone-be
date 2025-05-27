@@ -8,7 +8,6 @@ const auth = async (req, res, next) => {
     }
 
     const token = req.headers.authorization.split(' ')[1];
-    console.log('Token:', token);
 
     if (!token) {
       return res.status(401).json({ message: 'Not authorized, no token' });

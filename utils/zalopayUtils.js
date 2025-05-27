@@ -46,13 +46,10 @@ const createAndSendPaymentRequest = async (amount, orderId, description, items =
         const data = config.app_id + "|" + order.app_trans_id + "|" + order.app_user + "|" + 
                      order.amount + "|" + order.app_time + "|" + order.embed_data + "|" + order.item;
         order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
-
-        console.log(`[ZaloPay] Creating payment request for order: ${orderId}, amount: ${amount}`);
         
         // Send request to ZaloPay API
         const response = await axios.post(config.create_order_endpoint, null, { params: order });
         
-        console.log(`[ZaloPay] Payment request response:`, response.data);
         return response.data;
     } catch (error) {
         console.error('[ZaloPay] Create Payment Error:', error.response?.data || error.message);

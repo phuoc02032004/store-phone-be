@@ -61,8 +61,9 @@ exports.getOrderById = async (req, res) => {
 // @route   POST /api/orders
 // @access  Private
 exports.createOrder = async (req, res) => {
+  console.log('Creating order with body:', req.body);
   try {
-    const { items, shippingAddress, paymentMethod, notes, couponCode, shippingFee } = req.body;
+    const { items, shippingAddress, paymentMethod, notes, appliedCoupon: couponCode, shippingFee } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'No order items' });
@@ -150,7 +151,14 @@ exports.createOrder = async (req, res) => {
       // and might require changes to the orderItemSchema or a separate gift item schema.
       // For now, we'll just apply the discount if any.
 
-      appliedCoupon = coupon._id;
+      appliedCoupon = coupon.code;
+
+      // If a coupon was applied, record its usage for the user
+      const userCoupon = new UserCoupon({
+        userId: req.user._id,
+        couponId: coupon._id // 'coupon' is now in scope
+      });
+      await userCoupon.save();
     }
 
     const order = new Order({
@@ -169,15 +177,6 @@ exports.createOrder = async (req, res) => {
     });
 
     const createdOrder = await order.save();
-
-    // If a coupon was applied, record its usage for the user
-    if (appliedCoupon) {
-      const userCoupon = new UserCoupon({
-        userId: req.user._id,
-        couponId: appliedCoupon
-      });
-      await userCoupon.save();
-    }
 
     res.status(201).json(createdOrder);
   } catch (error) {

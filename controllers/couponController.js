@@ -94,3 +94,75 @@ exports.deleteCoupon = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+/**
+ * @desc    Apply a coupon to check its validity
+ * @route   POST /api/coupons/apply
+ * @access  Private
+ */
+exports.applyCoupon = async (req, res) => {
+    try {
+        const { couponCode, totalAmount } = req.body;
+        const userId = req.user._id;
+
+        if (!couponCode || totalAmount === undefined) {
+            return res.status(400).json({ message: 'Missing coupon code or total amount' });
+        }
+
+        const coupon = await Coupon.findOne({ code: couponCode });
+
+        if (!coupon) {
+            return res.status(404).json({ message: 'Coupon not found' });
+        }
+
+        // Check if coupon is active and valid
+        if (!coupon.isValid()) {
+            return res.status(400).json({ message: 'Coupon is not valid or expired' });
+        }
+
+        // Check usage limit per user
+        const UserCoupon = require('../models/UserCoupon'); // Import here to avoid circular dependency if not already imported
+        const userCouponCount = await UserCoupon.countDocuments({ userId: userId, couponId: coupon._id });
+        if (coupon.usageLimitPerUser !== null && userCouponCount >= coupon.usageLimitPerUser) {
+            return res.status(400).json({ message: 'You have reached the usage limit for this coupon' });
+        }
+
+        // Check minimum order value
+        if (coupon.minOrderValue && totalAmount < coupon.minOrderValue) {
+            return res.status(400).json({ message: `Minimum order value for this coupon is ${coupon.minOrderValue}` });
+        }
+
+        let discountAmount = 0;
+        let isFreeShipping = false;
+
+        if (coupon.type === 'PERCENTAGE_DISCOUNT') {
+            discountAmount = totalAmount * (coupon.value / 100);
+            if (coupon.maxDiscountValue && discountAmount > coupon.maxDiscountValue) {
+                discountAmount = coupon.maxDiscountValue;
+            }
+        } else if (coupon.type === 'FIXED_AMOUNT_DISCOUNT') {
+            discountAmount = coupon.value;
+        } else if (coupon.type === 'FREE_SHIPPING') {
+            isFreeShipping = true;
+        }
+
+        const finalAmount = totalAmount - discountAmount;
+
+        res.status(200).json({
+            success: true,
+            message: 'Coupon applied successfully',
+            coupon: {
+                code: coupon.code,
+                type: coupon.type,
+                value: coupon.value,
+                discountAmount: discountAmount,
+                isFreeShipping: isFreeShipping,
+                finalAmount: finalAmount
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};

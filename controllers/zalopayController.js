@@ -81,11 +81,9 @@ exports.createPayment = async (req, res) => {
             itemquantity: item.quantity
         }));
           // Calculate total price from items
-        const totalAmount = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        // Create ZaloPay payment
+        // Create ZaloPay payment using the finalAmount from the order
         const zalopayData = await zalopayUtils.createAndSendPaymentRequest(
-            Math.round(totalAmount),
+            Math.round(order.finalAmount),
             order._id.toString(),
             `Thanh toán đơn hàng #${order._id}`,
             zalopayItems

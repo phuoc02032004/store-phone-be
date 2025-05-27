@@ -6,7 +6,8 @@ const {
     getCouponById,
     getCouponByCode,
     updateCoupon,
-    deleteCoupon
+    deleteCoupon,
+    applyCoupon
 } = require('../controllers/couponController');
 
 const router = express.Router();
@@ -119,6 +120,74 @@ const router = express.Router();
  *         description: Server error
  */
 router.post('/',auth, adminAuth, createCoupon);
+
+/**
+ * @swagger
+ * /api/coupons/apply:
+ *   post:
+ *     summary: Apply a coupon to check its validity and calculate discount
+ *     tags: [Coupons]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - couponCode
+ *               - totalAmount
+ *             properties:
+ *               couponCode:
+ *                 type: string
+ *                 example: "SUMMER20"
+ *               totalAmount:
+ *                 type: number
+ *                 example: 100
+ *     responses:
+ *       200:
+ *         description: Coupon applied successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Coupon applied successfully"
+ *                 coupon:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: "SUMMER20"
+ *                     type:
+ *                       type: string
+ *                       example: "PERCENTAGE_DISCOUNT"
+ *                     value:
+ *                       type: number
+ *                       example: 20
+ *                     discountAmount:
+ *                       type: number
+ *                       example: 20
+ *                     isFreeShipping:
+ *                       type: boolean
+ *                       example: false
+ *                     finalAmount:
+ *                       type: number
+ *                       example: 80
+ *       400:
+ *         description: Invalid input or coupon not applicable
+ *       404:
+ *         description: Coupon not found
+ *       500:
+ *         description: Server error
+ */
+router.post('/apply', auth, applyCoupon);
 
 /**
  * @swagger
