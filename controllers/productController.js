@@ -4,8 +4,7 @@ const Category = require('../models/Category');
 const cloudinary = require('../config/cloudinary');
 const streamifier = require('streamifier');
 
-// Upload file to cloudinary
-const uploadToCloudinary = (fileBuffer, folderName = 'products') => { // Thêm folderName mặc định hoặc truyền từ controller
+const uploadToCloudinary = (fileBuffer, folderName = 'products') => { 
   return new Promise((resolve, reject) => {
     if (!fileBuffer) {
       return reject(new Error('Không có dữ liệu file để tải lên.'));
@@ -13,13 +12,12 @@ const uploadToCloudinary = (fileBuffer, folderName = 'products') => { // Thêm f
 
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: folderName, // Thư mục trên Cloudinary
+        folder: folderName, 
         resource_type: 'image',
       },
       (error, result) => {
         if (error) {
           console.error('Cloudinary Upload Stream Error:', error);
-          // Cung cấp thêm chi tiết lỗi nếu có từ Cloudinary
           const detailedError = error.message || 'Lỗi không xác định khi tải ảnh lên Cloudinary.';
           return reject(new Error(`Lỗi khi tải ảnh lên Cloudinary: ${detailedError}`));
         }
@@ -27,7 +25,6 @@ const uploadToCloudinary = (fileBuffer, folderName = 'products') => { // Thêm f
           console.log('Cloudinary Upload Success:', result.public_id, result.secure_url);
           resolve({ secure_url: result.secure_url, public_id: result.public_id });
         } else {
-          // Log kết quả không hợp lệ để debug
           console.error('Cloudinary Upload Result Invalid:', result);
           reject(new Error('Không nhận được kết quả URL hợp lệ từ Cloudinary.'));
         }
@@ -40,36 +37,52 @@ const uploadToCloudinary = (fileBuffer, folderName = 'products') => { // Thêm f
 // @desc    Search products
 // @route   GET /api/products/search
 // @access  Public
+
 exports.searchProducts = async (req, res) => {
   try {
-    const { keyword, minPrice, maxPrice, category } = req.query;
+    const { keyword, minPrice, maxPrice, category, color, capacity, minStock, maxStock, sortBy, order } = req.query;
     
-    // Build query object
     const query = {};
-    
-    // Search by name or description using regex
     if (keyword) {
       query.$or = [
         { name: { $regex: keyword, $options: 'i' } },
         { description: { $regex: keyword, $options: 'i' } }
       ];
     }
-    
-    // Filter by price range
+
     if (minPrice !== undefined || maxPrice !== undefined) {
-      query.price = {};
-      if (minPrice !== undefined) query.price.$gte = Number(minPrice);
-      if (maxPrice !== undefined) query.price.$lte = Number(maxPrice);
+      query['variants.price'] = {};
+      if (minPrice !== undefined) query['variants.price'].$gte = Number(minPrice);
+      if (maxPrice !== undefined) query['variants.price'].$lte = Number(maxPrice);
     }
     
-    // Filter by category
     if (category) {
       query.category = category;
     }
 
+    if (color) {
+      query['variants.color'] = { $regex: color, $options: 'i' };
+    }
+    if (capacity) {
+      query['variants.capacity'] = { $regex: capacity, $options: 'i' };
+    }
+
+    if (minStock !== undefined || maxStock !== undefined) {
+      query['variants.stock'] = {};
+      if (minStock !== undefined) query['variants.stock'].$gte = Number(minStock);
+      if (maxStock !== undefined) query['variants.stock'].$lte = Number(maxStock);
+    }
+
+    const sort = {};
+    if (sortBy) {
+      sort[sortBy] = order === 'asc' ? 1 : -1;
+    } else {
+      sort.createdAt = -1; 
+    }
+
     const products = await Product.find(query)
       .populate('category', 'name')
-      .sort({ createdAt: -1 });
+      .sort(sort);
 
     res.json(products);
   } catch (error) {
@@ -85,7 +98,6 @@ exports.getProducts = async (req, res) => {
   try {
     const { isNewArrival, isBestSeller } = req.query;
     
-    // Build query object based on parameters
     const query = {};
     if (isNewArrival === 'true') {
       query.isNewArrival = true;
@@ -119,7 +131,6 @@ exports.getProductById = async (req, res) => {
     res.json(product);
   } catch (error) {
     console.error('Error in getProductById:', error.message);
-    // Bắt lỗi CastError cụ thể
     if (error.name === 'CastError') {
         return res.status(400).json({ message: 'ID sản phẩm không đúng định dạng' });
     }
@@ -142,12 +153,10 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Dữ liệu biến thể sản phẩm không hợp lệ, phải là định dạng JSON.' });
     }
 
-    // Kiểm tra các trường bắt buộc
     if (!name || !categoryId || !variants || !Array.isArray(variants) || variants.length === 0) {
         return res.status(400).json({ message: 'Vui lòng cung cấp tên, ID danh mục và ít nhất một biến thể sản phẩm.' });
     }
 
-    // Kiểm tra các biến thể
     for (const variant of variants) {
       if (typeof variant.price !== 'number' || variant.price <= 0) {
         return res.status(400).json({ message: 'Mỗi biến thể phải có giá hợp lệ và lớn hơn 0.' });
@@ -161,11 +170,9 @@ exports.createProduct = async (req, res) => {
       if (!variant.capacity) {
         return res.status(400).json({ message: 'Mỗi biến thể phải có dung lượng.' });
       }
-      // Tạo SKU cho biến thể
       variant.sku = `${name.substring(0, 3).toUpperCase()}-${variant.color.substring(0, 3).toUpperCase()}-${variant.capacity.replace(/\s+/g, '')}-${Date.now()}`;
     }
 
-    // Kiểm tra trùng lặp biến thể
     const variantCombinations = new Set();
     for (const variant of variants) {
       const combination = `${variant.color}-${variant.capacity}`;
@@ -177,12 +184,10 @@ exports.createProduct = async (req, res) => {
       variantCombinations.add(combination);
     }
 
-    // Kiểm tra định dạng categoryId
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
       return res.status(400).json({ message: 'ID danh mục không hợp lệ.' });
     }
 
-    // (Tùy chọn nhưng khuyến nghị) Kiểm tra xem category có tồn tại không
     const categoryExists = await Category.findById(categoryId);
     if (!categoryExists) {
         return res.status(404).json({ message: 'Danh mục không tồn tại.' });
@@ -193,18 +198,16 @@ exports.createProduct = async (req, res) => {
 
     if (req.file && req.file.buffer) {
       try {
-        const result = await uploadToCloudinary(req.file.buffer, 'product_images'); // Truyền folderName
+        const result = await uploadToCloudinary(req.file.buffer, 'product_images'); 
         imageUrl = result.secure_url;
         imagePublicId = result.public_id;
       } catch (uploadError) {
-        // Không chặn việc tạo sản phẩm nếu upload ảnh lỗi, nhưng log lại
         console.error('Lỗi tải ảnh lên khi tạo sản phẩm:', uploadError.message);
-        // return res.status(500).json({ message: `Lỗi tải ảnh: ${uploadError.message}` }); // Hoặc trả lỗi nếu ảnh là bắt buộc
       }
     }    const product = new Product({
       name,
       description,
-      category: categoryId, // categoryId đã được xác thực là ObjectId hợp lệ (về mặt định dạng)
+      category: categoryId, 
       image: imageUrl,
       variants,
       isNewArrival: isNewArrival === 'true' || isNewArrival === true,
@@ -221,8 +224,6 @@ exports.createProduct = async (req, res) => {
     if (error.name === 'ValidationError') {
         return res.status(400).json({ message: 'Lỗi xác thực dữ liệu', errors: error.errors });
     }
-    // Lỗi "Cast to ObjectId failed" sẽ không xảy ra ở đây nếu bạn đã kiểm tra isValid ở trên
-    // và schema của bạn định nghĩa category là ObjectId.
     res.status(500).json({ message: 'Lỗi máy chủ' });
   }
 };
@@ -243,12 +244,10 @@ exports.updateProduct = async (req, res) => {
     }    const { name, description, category: categoryId, isNewArrival, isBestSeller } = req.body;
     let variants = req.body.variants;
 
-    // Kiểm tra và validate categoryId chỉ khi nó được gửi lên
     if (categoryId && categoryId !== 'string' && categoryId !== '') {
       if (!mongoose.Types.ObjectId.isValid(categoryId)) {
         return res.status(400).json({ message: 'ID danh mục cung cấp để cập nhật không hợp lệ.' });
       }
-      // Kiểm tra xem category có tồn tại không
       const categoryExists = await Category.findById(categoryId);
       if (!categoryExists) {
         return res.status(404).json({ message: 'Danh mục cung cấp để cập nhật không tồn tại.' });
@@ -256,7 +255,6 @@ exports.updateProduct = async (req, res) => {
       product.category = categoryId;
     }
 
-    // Cập nhật ảnh nếu có file mới
     if (req.file && req.file.buffer) {
       try {
         // (Tùy chọn) Xóa ảnh cũ trên Cloudinary trước khi tải ảnh mới
@@ -297,13 +295,11 @@ exports.updateProduct = async (req, res) => {
           return res.status(400).json({ message: 'Mỗi biến thể phải có dung lượng.' });
         }
         
-        // Nếu không có SKU (biến thể mới), tạo SKU mới
         if (!variant.sku) {
           variant.sku = `${product.name.substring(0, 3).toUpperCase()}-${variant.color.substring(0, 3).toUpperCase()}-${variant.capacity.replace(/\s+/g, '')}-${Date.now()}`;
         }
       }
 
-      // Kiểm tra trùng lặp biến thể
       const variantCombinations = new Set();
       for (const variant of variants) {
         const combination = `${variant.color}-${variant.capacity}`;
@@ -394,7 +390,6 @@ exports.deleteProduct = async (req, res) => {
     // }
 
     await product.deleteOne(); // Hoặc Product.findByIdAndDelete(req.params.id)
-                              // Nếu dùng findByIdAndDelete thì không cần dòng findById ở trên
 
     res.json({ message: 'Sản phẩm được xóa thành công' });
   } catch (error) {

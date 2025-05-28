@@ -8,7 +8,7 @@ const Order = require('../models/Order');
 // @route   POST /api/products/:id/reviews
 // @access  Private
 const createProductReview = asyncHandler(async (req, res) => {
-  const { rating, comment } = req.body; // Remove variantId from req.body
+  const { rating, comment } = req.body;
 
   const product = await Product.findById(req.params.id);
 

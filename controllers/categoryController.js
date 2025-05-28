@@ -19,7 +19,6 @@ exports.getParentCategories = async (req, res) => {
   }
 };
 
-// Upload file to cloudinary
 const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
     if (!fileBuffer) {
@@ -85,7 +84,6 @@ exports.getCategoryTree = async (req, res) => {
   try {
     const categories = await Category.find().sort({ level: 1, name: 1 });
     
-    // Build the tree structure
     const tree = [];
     const map = {};
     
@@ -190,7 +188,6 @@ exports.updateCategory = async (req, res) => {
       category.description = req.body.description;
     }
     
-    // Cập nhật parent category nếu được cung cấp
     if (req.body.parentId && req.body.parentId !== category.parent?.toString()) {
       if (req.body.parentId === req.params.id) {
         return res.status(400).json({ message: 'Category cannot be its own parent' });
@@ -201,7 +198,6 @@ exports.updateCategory = async (req, res) => {
         return res.status(404).json({ message: 'Parent category not found' });
       }
       
-      // Kiểm tra xem category mới không phải là child của category hiện tại
       if (newParent.ancestors.some(a => a._id.toString() === category._id.toString())) {
         return res.status(400).json({ message: 'Cannot set a descendant as parent' });
       }
@@ -217,7 +213,6 @@ exports.updateCategory = async (req, res) => {
       ];
       category.level = newParent.level + 1;
       
-      // Cập nhật tất cả categories con
       const children = await Category.find({ 'ancestors._id': category._id });
       for (const child of children) {
         const ancestorIndex = child.ancestors.findIndex(
@@ -256,18 +251,15 @@ exports.getChildCategories = async (req, res) => {
   try {
     const parentId = req.params.id;
     
-    // Validate if parentId is valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(parentId)) {
       return res.status(400).json({ message: 'Invalid category ID format' });
     }
 
-    // Check if parent category exists
     const parentCategory = await Category.findById(parentId);
     if (!parentCategory) {
       return res.status(404).json({ message: 'Parent category not found' });
     }
 
-    // Find all child categories
     const childCategories = await Category.find({ parent: parentId })
       .sort({ name: 1 });
     
@@ -289,7 +281,6 @@ exports.deleteCategory = async (req, res) => {
       return res.status(404).json({ message: 'Category not found' });
     }
     
-    // Kiểm tra xem có danh mục con không
     const hasChildren = await Category.exists({ parent: category._id });
     if (hasChildren) {
       return res.status(400).json({ message: 'Cannot delete category with subcategories' });

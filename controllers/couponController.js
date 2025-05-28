@@ -115,19 +115,16 @@ exports.applyCoupon = async (req, res) => {
             return res.status(404).json({ message: 'Coupon not found' });
         }
 
-        // Check if coupon is active and valid
         if (!coupon.isValid()) {
             return res.status(400).json({ message: 'Coupon is not valid or expired' });
         }
 
-        // Check usage limit per user
-        const UserCoupon = require('../models/UserCoupon'); // Import here to avoid circular dependency if not already imported
+        const UserCoupon = require('../models/UserCoupon'); 
         const userCouponCount = await UserCoupon.countDocuments({ userId: userId, couponId: coupon._id });
         if (coupon.usageLimitPerUser !== null && userCouponCount >= coupon.usageLimitPerUser) {
             return res.status(400).json({ message: 'You have reached the usage limit for this coupon' });
         }
 
-        // Check minimum order value
         if (coupon.minOrderValue && totalAmount < coupon.minOrderValue) {
             return res.status(400).json({ message: `Minimum order value for this coupon is ${coupon.minOrderValue}` });
         }

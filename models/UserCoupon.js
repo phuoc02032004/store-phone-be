@@ -27,6 +27,6 @@ const userCouponSchema = new mongoose.Schema({
     timestamps: true
 });
 
-userCouponSchema.index({ userId: 1, couponId: 1 }, { unique: true }); // Đảm bảo mỗi người dùng chỉ có một bản sao của một coupon cụ thể
+userCouponSchema.index({ userId: 1, couponId: 1 }, { unique: true }); 
 
 module.exports = mongoose.model('UserCoupon', userCouponSchema);

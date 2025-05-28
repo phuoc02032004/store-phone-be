@@ -102,7 +102,6 @@ couponSchema.methods.isValid = function() {
     if (!this.isActive) return false;
     if (this.startDate > now || this.endDate < now) return false;
     if (this.usageLimit !== null && this.timesUsed >= this.usageLimit) return false;
-    // Thêm các kiểm tra khác nếu cần
     return true;
 };
 

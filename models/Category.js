@@ -46,10 +46,8 @@ const categorySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Tạo index cho trường ancestors để tối ưu hiệu suất truy vấn
 categorySchema.index({ 'ancestors._id': 1 });
 
-// Method để lấy đường dẫn đầy đủ của category
 categorySchema.methods.getPath = function() {
   return this.ancestors.map(a => a.name).concat([this.name]).join(' > ');
 };

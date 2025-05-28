@@ -19,16 +19,10 @@ const couponRoutes = require('./routes/couponRoutes');
 
 const app = express();
 
-// Enable CORS for all origins
 app.use(cors());
-
-// Body parser middleware
 app.use(express.json());
-
-// Connect to MongoDB
 connectDB();
 
-// Swagger configuration
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -50,14 +44,13 @@ const options = {
       bearerAuth: [],
     }],
   },
-  apis: ['./routes/*.js'], // Path to the API routes
+  apis: ['./routes/*.js'], 
 };
 
 const specs = swaggerJsdoc(options);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);

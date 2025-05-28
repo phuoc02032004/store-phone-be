@@ -45,7 +45,6 @@ exports.getOrderById = async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Make sure user is order owner or admin
     if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(401).json({ message: 'Not authorized' });
     }
@@ -68,7 +67,6 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: 'No order items' });
     }
 
-    // Verify products and calculate total
     let totalAmount = 0;
     const orderItems = [];
 
@@ -78,20 +76,17 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: `Product with ID ${item.product} not found` });
       }
 
-      // Find the specific variant
       const variant = product.variants.id(item.variantId);
       if (!variant) {
         return res.status(400).json({ message: `Variant with ID ${item.variantId} not found for product ${product.name}` });
       }
 
-      // Check if variant is available
       if (variant.stock === 0) {
         return res.status(400).json({
           message: `Product "${product.name}" - Variant "${variant.variantName}" is out of stock`
         });
       }
 
-      // Check if requested quantity is available for the variant
       if (variant.stock < item.quantity) {
         return res.status(400).json({
           message: `Not enough stock for "${product.name}" - Variant "${variant.variantName}". Requested: ${item.quantity}, Available: ${variant.stock}`
@@ -100,16 +95,15 @@ exports.createOrder = async (req, res) => {
 
       orderItems.push({
         product: item.product,
-        variantId: item.variantId, // Store variant ID in order item
+        variantId: item.variantId, 
         quantity: item.quantity,
-        price: variant.price // Use variant's price
+        price: variant.price 
       });
 
       totalAmount += variant.price * item.quantity;
 
-      // Update variant stock
       variant.stock -= item.quantity;
-      await product.save(); // Save the product to persist variant changes
+      await product.save(); 
     }
 
     let appliedCoupon = null;
@@ -124,23 +118,17 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: 'Invalid coupon code' });
       }
 
-      // Check if coupon is active and valid
       if (!coupon.isValid()) {
         return res.status(400).json({ message: 'Coupon is not valid or expired' });
       }
-
-      // Check usage limit per user
       const userCouponCount = await UserCoupon.countDocuments({ userId: req.user._id, couponId: coupon._id });
       if (coupon.usageLimitPerUser !== null && userCouponCount >= coupon.usageLimitPerUser) {
         return res.status(400).json({ message: 'You have reached the usage limit for this coupon' });
       }
 
-      // Check minimum order value
       if (coupon.minOrderValue && totalAmount < coupon.minOrderValue) {
         return res.status(400).json({ message: `Minimum order value for this coupon is ${coupon.minOrderValue}` });
       }
-
-      // Apply discount based on coupon type
       if (coupon.type === 'PERCENTAGE_DISCOUNT') {
         discountAmount = totalAmount * (coupon.value / 100);
         if (coupon.maxDiscountValue && discountAmount > coupon.maxDiscountValue) {
@@ -152,17 +140,11 @@ exports.createOrder = async (req, res) => {
         isFreeShipping = true;
         finalShippingFee = 0;
       }
-      // For BUY_X_GET_Y and PRODUCT_GIFT, additional logic would be needed
-      // to adjust order items or add gift products, which is more complex
-      // and might require changes to the orderItemSchema or a separate gift item schema.
-      // For now, we'll just apply the discount if any.
+    appliedCoupon = coupon.code;
 
-      appliedCoupon = coupon.code;
-
-      // If a coupon was applied, record its usage for the user
       const userCoupon = new UserCoupon({
         userId: req.user._id,
-        couponId: coupon._id // 'coupon' is now in scope
+        couponId: coupon._id
       });
       await userCoupon.save();
     }
@@ -225,24 +207,21 @@ exports.cancelOrder = async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Check if user is order owner
     if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(401).json({ message: 'Not authorized' });
     }
 
-    // Can only cancel if order is pending or processing
     if (!['PENDING', 'PROCESSING'].includes(order.orderStatus)) {
       return res.status(400).json({ message: 'Order cannot be cancelled' });
     }
 
-    // Restore product variant stock
     for (const item of order.items) {
       const product = await Product.findById(item.product);
       if (product) {
         const variant = product.variants.id(item.variantId);
         if (variant) {
           variant.stock += item.quantity;
-          await product.save(); // Save the product to persist variant changes
+          await product.save();
         }
       }
     }

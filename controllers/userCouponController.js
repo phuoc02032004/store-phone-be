@@ -9,7 +9,6 @@ exports.assignCouponToUser = async (req, res) => {
     const { userId, couponId } = req.body;
 
     try {
-        // Check if user and coupon exist
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -20,7 +19,6 @@ exports.assignCouponToUser = async (req, res) => {
             return res.status(404).json({ message: 'Coupon not found' });
         }
 
-        // Check if the user already has this coupon
         const existingUserCoupon = await UserCoupon.findOne({ userId, couponId });
         if (existingUserCoupon) {
             return res.status(400).json({ message: 'User already has this coupon' });
@@ -72,7 +70,6 @@ exports.markCouponAsUsed = async (req, res) => {
         userCoupon.usedAt = Date.now();
         await userCoupon.save();
 
-        // Optionally, increment timesUsed in the Coupon schema
         const coupon = await Coupon.findById(userCoupon.couponId);
         if (coupon) {
             coupon.timesUsed = (coupon.timesUsed || 0) + 1;

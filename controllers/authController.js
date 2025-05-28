@@ -8,10 +8,8 @@ const User = require('../models/User');
  * @access  Public
  */
 const login = async (req, res) => {
-  try { // Khối try bắt đầu
+  try { 
     const { email, password } = req.body;
-
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         status: 'error',
@@ -19,7 +17,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Check for user email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
@@ -28,7 +25,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -37,29 +33,27 @@ const login = async (req, res) => {
       });
     }
 
-    // Create token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '30d' }
     );
 
-    // Gửi response thành công
-    res.status(200).json({ // Mở ngoặc cho đối tượng JSON
+    res.status(200).json({
       status: 'success',
-      data: { // Mở ngoặc cho đối tượng data
+      data: { 
         _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
         token
-      } // Đóng ngoặc cho đối tượng data
-    }); // Đóng ngoặc cho đối tượng JSON và kết thúc lệnh .json()
-  } catch (error) { // Khối catch nằm SAU khi khối try đã kết thúc
-    console.error('Login Error:', error); // Thêm context cho log lỗi
-    res.status(500).json({ status: 'error', message: 'Server Error' }); // Thống nhất cấu trúc lỗi
+      }
+    });
+  } catch (error) {
+    console.error('Login Error:', error);
+    res.status(500).json({ status: 'error', message: 'Server Error' });
   }
-}; // Đóng hàm login
+}; 
 
 /**
  * @desc    Register new user
@@ -70,40 +64,33 @@ const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Validate input (thêm ví dụ)
     if (!username || !email || !password) {
       return res.status(400).json({ status: 'error', message: 'Vui lòng cung cấp đủ thông tin: username, email, password' });
     }
-    if (password.length < 4) { // Giả sử có yêu cầu độ dài tối thiểu
+    if (password.length < 4) {
         return res.status(400).json({ status: 'error', message: 'Mật khẩu phải có ít nhất 4 ký tự.' });
     }
 
-    // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ status: 'error', message: 'User already exists' });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
-      role: 'user', // Default role
+      role: 'user',
     });
 
-    // Create token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '30d' }
     );
-
-    // Thay đổi response để nhất quán hơn (tương tự login)
     res.status(201).json({
       status: 'success',
       data: {
@@ -127,7 +114,6 @@ const register = async (req, res) => {
  */
 const getProfile = async (req, res) => {
   try {
-    // req.user được gán bởi middleware xác thực (ví dụ: từ token)
     if (!req.user || !req.user._id) {
         return res.status(401).json({ status: 'error', message: 'Not authorized, token failed or user not found' });
     }
@@ -160,7 +146,6 @@ const promoteToAdmin = async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'User not found' });
     }
 
-    // Already an admin
     if (user.role === 'admin') {
       return res.status(400).json({ status: 'error', message: 'User is already an admin' });
     }
@@ -192,7 +177,6 @@ const changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
 
-    // Validate input
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ status: 'error', message: 'Vui lòng cung cấp đủ thông tin: oldPassword, newPassword' });
     }
@@ -200,19 +184,16 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ status: 'error', message: 'Mật khẩu mới phải có ít nhất 4 ký tự.' });
     }
 
-    // Find user
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ status: 'error', message: 'User not found' });
     }
 
-    // Check old password
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ status: 'error', message: 'Mật khẩu cũ không chính xác.' });
     }
 
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
     await user.save();
