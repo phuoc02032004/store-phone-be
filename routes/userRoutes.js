@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, getUser } = require('../controllers/userController');
+const { registerUser, loginUser, getUser, updateFcmToken } = require('../controllers/userController');
 const { auth, adminAuth } = require('../middlewares/authMiddleware');
 
 /**
@@ -144,5 +144,43 @@ router.post('/login', loginUser);
  *         description: Server error
  */
 router.get('/me', auth, getUser);
+
+/**
+ * @swagger
+ * /api/users/fcm-token:
+ *   patch:
+ *     summary: Update user's FCM token
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fcmToken
+ *             properties:
+ *               fcmToken:
+ *                 type: string
+ *                 description: The Firebase Cloud Messaging token for the user's device.
+ *     responses:
+ *       200:
+ *         description: FCM token updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: FCM token updated successfully
+ *       401:
+ *         description: Not authorized, token failed
+ *       500:
+ *         description: Server error
+ */
+router.patch('/fcm-token', auth, updateFcmToken);
 
 module.exports = router;

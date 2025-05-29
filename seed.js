@@ -11,7 +11,6 @@ const seedCategories = async () => {
   try {
     console.log('Seeding categories...');
     
-    // Tạo categories
     const categories = [
       {
         name: 'iPhone',

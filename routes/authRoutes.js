@@ -180,6 +180,42 @@ router.get('/profile', auth, getProfile);
  *         description: Server error
  */
 
+router.put('/promote/:id', auth, adminAuth, promoteToAdmin);
+
+/**
+ * @swagger
+ * /api/auth/promote/{id}:
+ *   put:
+ *     summary: Promote user to admin role
+ *     description: Promote a user to admin role. Only admins can perform this action.
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to promote
+ *     responses:
+ *       200:
+ *         description: User promoted to admin successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserResponse'
+ *       400:
+ *         description: User is already an admin
+ *       401:
+ *         description: Not authorized
+ *       403:
+ *         description: Not authorized as admin
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 /**
  * @swagger
  * /api/auth/changepassword:

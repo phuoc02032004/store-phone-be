@@ -9,7 +9,7 @@ const User = require('../models/User');
  */
 const login = async (req, res) => {
   try { 
-    const { email, password } = req.body;
+    const { email, password, fcmToken } = req.body;
     if (!email || !password) {
       return res.status(400).json({
         status: 'error',
@@ -46,9 +46,15 @@ const login = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        token
+        token,
+        fcmToken: user.fcmToken,
       }
     });
+
+    if (fcmToken) {
+      user.fcmToken = fcmToken;
+      await user.save();
+    }
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({ status: 'error', message: 'Server Error' });
@@ -62,7 +68,7 @@ const login = async (req, res) => {
  */
 const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, fcmToken } = req.body;
 
     if (!username || !email || !password) {
       return res.status(400).json({ status: 'error', message: 'Vui lòng cung cấp đủ thông tin: username, email, password' });
@@ -84,6 +90,7 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       role: 'user',
+      fcmToken: fcmToken || null,
     });
 
     const token = jwt.sign(
@@ -98,7 +105,8 @@ const register = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        token
+        token,
+        fcmToken: user.fcmToken,
       }
     });
   } catch (error) {
@@ -117,7 +125,7 @@ const getProfile = async (req, res) => {
     if (!req.user || !req.user._id) {
         return res.status(401).json({ status: 'error', message: 'Not authorized, token failed or user not found' });
     }
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findById(req.user._id).select('-password -fcmToken');
     if (!user) {
         return res.status(404).json({ status: 'error', message: 'User not found' });
     }
@@ -210,5 +218,5 @@ module.exports = {
   register,
   getProfile,
   promoteToAdmin,
-  changePassword
+  changePassword,
 };

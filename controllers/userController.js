@@ -118,3 +118,30 @@ exports.updateUserRole = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+// @desc    Update user's FCM token
+// @route   PATCH /api/users/fcm-token
+// @access  Private
+exports.updateFcmToken = async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+
+    if (!fcmToken) {
+      return res.status(400).json({ message: 'FCM token is required' });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.fcmToken = fcmToken;
+    await user.save();
+
+    res.status(200).json({ message: 'FCM token updated successfully' });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server error');
+  }
+};

@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
 const UserCoupon = require('../models/UserCoupon');
+const { createAndSendNotification } = require('./notificationController');
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -166,6 +167,22 @@ exports.createOrder = async (req, res) => {
 
     const createdOrder = await order.save();
 
+    // Send order confirmation notification
+    try {
+      const io = req.app.get('socketio');
+      await createAndSendNotification(io, {
+        recipientId: createdOrder.user.toString(),
+        title: 'Xác nhận đặt hàng thành công',
+        body: `Đơn hàng #${createdOrder._id.toString().slice(-6)} của bạn đã được đặt thành công.`,
+        data: {
+          orderId: createdOrder._id.toString(),
+          type: 'ORDER_CONFIRMATION',
+        },
+      });
+    } catch (notificationError) {
+      console.error('Error sending order confirmation notification:', notificationError);
+    }
+
     res.status(201).json(createdOrder);
   } catch (error) {
     console.error(error);
@@ -189,6 +206,47 @@ exports.updateOrderStatus = async (req, res) => {
     if (paymentStatus) order.paymentStatus = paymentStatus;
 
     const updatedOrder = await order.save();
+
+    // Send notification based on order status
+    let notificationTitle = '';
+    let notificationBody = '';
+    let notificationType = '';
+
+    if (updatedOrder.orderStatus === 'SHIPPED') {
+      notificationTitle = '🚚 Đơn hàng đang được giao';
+      notificationBody = `Đơn hàng #${updatedOrder._id.toString().slice(-6)} của bạn đang trên đường giao đến bạn.`;
+      notificationType = 'ORDER_SHIPPED';
+    } else if (updatedOrder.orderStatus === 'DELIVERED') {
+      notificationTitle = '📦 Đơn hàng đã giao thành công';
+      notificationBody = `Đơn hàng #${updatedOrder._id.toString().slice(-6)} của bạn đã được giao thành công.`;
+      notificationType = 'ORDER_DELIVERED';
+    } else if (updatedOrder.orderStatus === 'CANCELLED') {
+      notificationTitle = '❌ Đơn hàng bị hủy';
+      notificationBody = `Đơn hàng #${updatedOrder._id.toString().slice(-6)} của bạn đã bị hủy.`;
+      notificationType = 'ORDER_CANCELLED';
+    } else if (updatedOrder.paymentStatus === 'FAILED') {
+      notificationTitle = '❌ Lỗi thanh toán';
+      notificationBody = `Thanh toán cho đơn hàng #${updatedOrder._id.toString().slice(-6)} của bạn đã thất bại. Vui lòng kiểm tra lại.`;
+      notificationType = 'PAYMENT_FAILED';
+    }
+
+    if (notificationTitle && notificationBody) {
+      try {
+        const io = req.app.get('socketio');
+        await createAndSendNotification(io, {
+          recipientId: updatedOrder.user.toString(),
+          title: notificationTitle,
+          body: notificationBody,
+          data: {
+            orderId: updatedOrder._id.toString(),
+            type: notificationType,
+          },
+        });
+      } catch (notificationError) {
+        console.error('Error sending order status notification:', notificationError);
+      }
+    }
+
     res.json(updatedOrder);
   } catch (error) {
     console.error(error);
@@ -228,6 +286,22 @@ exports.cancelOrder = async (req, res) => {
 
     order.orderStatus = 'CANCELLED';
     await order.save();
+
+    // Send order cancellation notification
+    try {
+      const io = req.app.get('socketio');
+      await createAndSendNotification(io, {
+        recipientId: order.user.toString(),
+        title: '❌ Đơn hàng bị hủy',
+        body: `Đơn hàng #${order._id.toString().slice(-6)} của bạn đã bị hủy.`,
+        data: {
+          orderId: order._id.toString(),
+          type: 'ORDER_CANCELLED',
+        },
+      });
+    } catch (notificationError) {
+      console.error('Error sending order cancellation notification:', notificationError);
+    }
 
     res.json({ message: 'Order cancelled successfully', order });
   } catch (error) {

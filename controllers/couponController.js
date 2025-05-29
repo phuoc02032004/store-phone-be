@@ -1,4 +1,6 @@
 const Coupon = require('../models/Coupon');
+const User = require('../models/User');
+const { sendNotification } = require('./notificationController');
 
 // @desc    Create a new coupon
 // @route   POST /api/coupons
@@ -8,6 +10,27 @@ exports.createCoupon = async (req, res) => {
         const coupon = new Coupon({ ...req.body, createdBy: req.user.id });
         console.log(req.body);
         await coupon.save();
+
+        // Send notification to all users about the new promotion
+        const users = await User.find({});
+        for (const user of users) {
+            try {
+                await sendNotification({
+                    body: {
+                        recipientId: user._id.toString(),
+                        title: '📣 Thông báo chương trình khuyến mãi mới',
+                        body: `Mã giảm giá "${coupon.code}" mới đã có! Giảm giá ${coupon.value}${coupon.type === 'PERCENTAGE_DISCOUNT' ? '%' : 'đ'} cho đơn hàng của bạn.`,
+                        data: {
+                            couponId: coupon._id.toString(),
+                            type: 'NEW_PROMOTION',
+                        },
+                    },
+                });
+            } catch (notificationError) {
+                console.error(`Error sending promotion notification to user ${user._id}:`, notificationError);
+            }
+        }
+
         res.status(201).json(coupon);
     } catch (error) {
         console.error(error);

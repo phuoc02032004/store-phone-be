@@ -234,7 +234,7 @@ router.post('/', auth, createOrder);
 /**
  * @swagger
  * /api/orders/{id}:
- *   put:
+ *   patch:
  *     summary: Update order status (Admin only)
  *     tags: [Orders]
  *     security:
@@ -270,12 +270,12 @@ router.post('/', auth, createOrder);
  *       401:
  *         description: Not authorized
  */
-router.put('/:id', auth, adminAuth, updateOrderStatus);
+router.patch('/:id', auth, adminAuth, updateOrderStatus);
 
 /**
  * @swagger
  * /api/orders/{id}/cancel:
- *   put:
+ *   patch:
  *     summary: Cancel order
  *     tags: [Orders]
  *     security:
@@ -300,6 +300,6 @@ router.put('/:id', auth, adminAuth, updateOrderStatus);
  *       401:
  *         description: Not authorized
  */
-router.put('/:id/cancel', auth, cancelOrder);
+router.patch('/:id/cancel', auth, cancelOrder);
 
 module.exports = router;

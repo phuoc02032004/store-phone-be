@@ -15,6 +15,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  fcmToken: {
+    type: String,
+  },
   isAdmin: {
     type: Boolean,
     default: false
