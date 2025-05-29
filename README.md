@@ -9,6 +9,7 @@ This project is a backend API for a phone store application, built with Node.js,
 - Product Management (CRUD operations, image upload)
 - Category Management (CRUD operations)
 - Order Management
+- Real-time Notifications (via Socket.IO and FCM)
 - ZaloPay Integration for payments
 - Image Uploads via Cloudinary
 - RESTful API design
@@ -21,6 +22,8 @@ This project is a backend API for a phone store application, built with Node.js,
 - Bcrypt for password hashing
 - Cloudinary for image storage
 - ZaloPay for payment gateway
+- Firebase Cloud Messaging (FCM) for push notifications
+- Socket.IO for real-time notifications
 - Docker for containerization
 
 ## Installation
@@ -55,7 +58,16 @@ ZALOPAY_APP_ID=your_zalopay_app_id
 ZALOPAY_KEY1=your_zalopay_key1
 ZALOPAY_KEY2=your_zalopay_key2
 ZALOPAY_CALLBACK_URL=your_zalopay_callback_url
+FIREBASE_SERVICE_ACCOUNT_PATH=./serviceAccountKey.json # Path to your Firebase service account key file
 ```
+
+**Note on Firebase Service Account Key:**
+To enable Firebase Cloud Messaging (FCM), you need to obtain a service account key file from your Firebase project.
+1. Go to your Firebase project in the Firebase console.
+2. Navigate to Project settings -> Service accounts.
+3. Click on "Generate new private key" and download the JSON file.
+4. Rename the downloaded file to `serviceAccountKey.json` and place it in the root directory of this project.
+5. Ensure the `FIREBASE_SERVICE_ACCOUNT_PATH` in your `.env` file points to this file.
 
 ## Running the Application
 
