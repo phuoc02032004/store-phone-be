@@ -169,6 +169,7 @@ exports.createOrder = async (req, res) => {
 
     // Send order confirmation notification
     try {
+        
       const io = req.app.get('socketio');
       await createAndSendNotification(io, {
         recipientId: createdOrder.user.toString(),

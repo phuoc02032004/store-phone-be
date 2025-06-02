@@ -151,3 +151,22 @@ module.exports = {
   createAndSendNotification, // Export the new internal helper function
   emitNotificationEvent, // Export the helper function
 };
+
+// @desc    Get all notifications (Admin only)
+// @route   GET /api/notifications
+// @access  Private/Admin
+const getAllNotifications = asyncHandler(async (req, res) => {
+  const notifications = await Notify.find().sort({ createdAt: -1 });
+  res.status(200).json(notifications);
+});
+
+module.exports = {
+  sendNotification,
+  getMyNotifications,
+  getNotificationById,
+  markNotificationAsRead,
+  deleteNotification,
+  getAllNotifications, // Export the new function
+  createAndSendNotification,
+  emitNotificationEvent,
+};

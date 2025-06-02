@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, getUser, updateFcmToken } = require('../controllers/userController');
+const { registerUser, loginUser, getUser, updateFcmToken, getAllUsers } = require('../controllers/userController');
 const { auth, adminAuth } = require('../middlewares/authMiddleware');
 
 /**
@@ -182,5 +182,47 @@ router.get('/me', auth, getUser);
  *         description: Server error
  */
 router.patch('/fcm-token', auth, updateFcmToken);
+
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Get all users (Admin only)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: The user ID.
+ *                   username:
+ *                     type: string
+ *                     description: The user's username.
+ *                   email:
+ *                     type: string
+ *                     description: The user's email.
+ *                   isAdmin:
+ *                     type: boolean
+ *                     description: Whether the user is an admin.
+ *                   role:
+ *                     type: string
+ *                     description: The user's role (user or admin).
+ *       401:
+ *         description: Not authorized, token failed
+ *       403:
+ *         description: Not authorized as admin
+ *       500:
+ *         description: Server error
+ */
+router.get('/', auth, adminAuth, getAllUsers);
 
 module.exports = router;

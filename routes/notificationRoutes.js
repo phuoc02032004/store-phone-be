@@ -1,10 +1,11 @@
 const express = require('express');
 const { 
-  sendNotification, 
-  getMyNotifications, 
+  sendNotification,
+  getMyNotifications,
   getNotificationById,
   markNotificationAsRead,
-  deleteNotification 
+  deleteNotification,
+  getAllNotifications
 } = require('../controllers/notificationController');
 const { auth, adminAuth } = require('../middlewares/authMiddleware');
 
@@ -243,5 +244,31 @@ router.route('/:id/read').patch(auth, markNotificationAsRead);
  *         description: Lỗi server
  */
 router.route('/:id').delete(auth, deleteNotification);
+
+/**
+ * @swagger
+ * /api/notifications:
+ *   get:
+ *     summary: Lấy tất cả thông báo (Chỉ Admin)
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách tất cả thông báo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Notification'
+ *       401:
+ *         description: Không có quyền truy cập
+ *       403:
+ *         description: Không phải admin
+ *       500:
+ *         description: Lỗi server
+ */
+router.route('/').get(auth, adminAuth, getAllNotifications);
 
 module.exports = router;
