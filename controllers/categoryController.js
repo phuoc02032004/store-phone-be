@@ -275,6 +275,11 @@ exports.getChildCategories = async (req, res) => {
 // @access  Private/Admin
 exports.deleteCategory = async (req, res) => {
   try {
+    // Validate if the provided ID is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid category ID format' });
+    }
+
     const category = await Category.findById(req.params.id);
     
     if (!category) {
@@ -286,7 +291,8 @@ exports.deleteCategory = async (req, res) => {
       return res.status(400).json({ message: 'Cannot delete category with subcategories' });
     }
     
-    await category.remove();
+    // Use deleteOne() instead of the deprecated remove()
+    await category.deleteOne();
     
     res.json({ message: 'Category removed' });
   } catch (error) {
