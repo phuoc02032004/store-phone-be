@@ -1,12 +1,17 @@
 const Coupon = require('../models/Coupon');
 const User = require('../models/User');
-const { sendNotification } = require('./notificationController');
+const { sendNotification, createAndSendNotification } = require('./notificationController');
 
 // @desc    Create a new coupon
 // @route   POST /api/coupons
 // @access  Private/Admin
 exports.createCoupon = async (req, res) => {
     try {
+        // Handle empty string for giftProductId
+        if (req.body.giftProductId === '') {
+            req.body.giftProductId = undefined;
+        }
+
         const coupon = new Coupon({ ...req.body, createdBy: req.user.id });
         console.log(req.body);
         await coupon.save();
@@ -15,18 +20,18 @@ exports.createCoupon = async (req, res) => {
         const users = await User.find({});
         for (const user of users) {
             try {
-                await sendNotification({
-                    body: {
-                        recipientId: user._id.toString(),
-                        title: '📣 Thông báo chương trình khuyến mãi mới',
-                        body: `Mã giảm giá "${coupon.code}" mới đã có! Giảm giá ${coupon.value}${coupon.type === 'PERCENTAGE_DISCOUNT' ? '%' : 'đ'} cho đơn hàng của bạn.`,
-                        data: {
-                            couponId: coupon._id.toString(),
-                            type: 'NEW_PROMOTION',
-                        },
+                // Call createAndSendNotification directly
+                await createAndSendNotification(req.app.get('socketio'), {
+                    recipientId: user._id.toString(),
+                    title: '📣 Thông báo chương trình khuyến mãi mới',
+                    body: `Mã giảm giá "${coupon.code}" mới đã có! Giảm giá ${coupon.value}${coupon.type === 'PERCENTAGE_DISCOUNT' ? '%' : 'đ'} cho đơn hàng của bạn.`,
+                    data: {
+                        couponId: coupon._id.toString(),
+                        type: 'NEW_PROMOTION',
                     },
                 });
             } catch (notificationError) {
+                // Log the error but continue sending to other users
                 console.error(`Error sending promotion notification to user ${user._id}:`, notificationError);
             }
         }
@@ -88,6 +93,11 @@ exports.getCouponByCode = async (req, res) => {
 // @access  Private/Admin
 exports.updateCoupon = async (req, res) => {
     try {
+        // Handle empty string for giftProductId
+        if (req.body.giftProductId === '') {
+            req.body.giftProductId = undefined;
+        }
+
         const coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
