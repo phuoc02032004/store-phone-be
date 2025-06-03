@@ -5,7 +5,8 @@ const {
   getNotificationById,
   markNotificationAsRead,
   deleteNotification,
-  getAllNotifications
+  getAllNotifications,
+  notifyAdminsOfNewOrder // Add the new function to imports
 } = require('../controllers/notificationController');
 const { auth, adminAuth } = require('../middlewares/authMiddleware');
 
@@ -271,5 +272,76 @@ router.route('/:id').delete(auth, deleteNotification);
  */
 
 router.route('/').get(auth, adminAuth, getAllNotifications);
+
+/**
+ * @swagger
+ * /api/notifications/notify-admins:
+ *   post:
+ *     summary: Gửi thông báo đơn hàng mới đến tất cả admin (Internal use)
+ *     tags: [Notifications]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Chi tiết đơn hàng mới
+ *             # Define schema based on your Order model structure
+ *             properties:
+ *               _id:
+ *                 type: string
+ *                 description: ID của đơn hàng
+ *               user:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: ID của người dùng đặt hàng
+ *                   username:
+ *                     type: string
+ *                     description: Tên người dùng đặt hàng
+ *               totalPrice:
+ *                 type: number
+ *                 description: Tổng giá trị đơn hàng
+ *               # Add other relevant order properties here
+ *     responses:
+ *       200:
+ *         description: Thông báo đã được gửi đến admin
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Notified X admin users.
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       message:
+ *                         type: string
+ *                       notificationId:
+ *                         type: string
+ *       500:
+ *         description: Lỗi server
+ */
+router.route('/notify-admins').post(async (req, res) => {
+  const io = req.app.get('socketio');
+  const orderDetails = req.body; // Assuming order details are sent in the body
+
+  if (!orderDetails || !orderDetails._id || !orderDetails.user || !orderDetails.totalPrice) {
+    return res.status(400).json({ message: 'Invalid order details provided.' });
+  }
+
+  try {
+    const result = await notifyAdminsOfNewOrder(io, orderDetails);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error notifying admins', error: error.message });
+  }
+});
+
 
 module.exports = router;

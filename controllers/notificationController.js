@@ -150,6 +150,48 @@ const getAllNotifications = asyncHandler(async (req, res) => {
   res.status(200).json(notifications);
 });
 
+// @desc    Notify all admin users about a new order
+// @route   (This will be called internally or via a new route)
+// @access  Internal/Private
+const notifyAdminsOfNewOrder = async (io, orderDetails) => {
+  try {
+    // Find all users who are admins
+    const adminUsers = await User.find({ $or: [{ isAdmin: true }, { role: 'admin' }] });
+
+    if (adminUsers.length === 0) {
+      console.log('No admin users found to notify.');
+      return { message: 'No admin users found.' };
+    }
+
+    const notificationPromises = adminUsers.map(async (adminUser) => {
+      const title = 'New Order Placed';
+      const body = `A new order (ID: ${orderDetails._id}) has been placed by ${orderDetails.user.username}. Total: ${orderDetails.totalPrice}`;
+      const data = {
+        orderId: orderDetails._id.toString(),
+        userId: orderDetails.user._id.toString(),
+        type: 'new_order_admin',
+      };
+
+      // Use the existing helper to create and send the notification
+      return createAndSendNotification(io, {
+        title,
+        body,
+        data,
+        recipientId: adminUser._id,
+        fcmToken: adminUser.fcmToken, // Pass FCM token if available
+      });
+    });
+
+    const results = await Promise.all(notificationPromises);
+    console.log(`Notified ${results.length} admin users about the new order.`);
+    return { message: `Notified ${results.length} admin users.`, results };
+
+  } catch (error) {
+    console.error('Error notifying admins of new order:', error);
+    throw new Error(`Error notifying admins: ${error.message}`);
+  }
+};
+
 module.exports = {
   sendNotification,
   getMyNotifications,
@@ -159,4 +201,5 @@ module.exports = {
   createAndSendNotification,
   emitNotificationEvent,
   getAllNotifications,
+  notifyAdminsOfNewOrder, // Export the new function
 };

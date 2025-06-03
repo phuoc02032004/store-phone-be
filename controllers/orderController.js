@@ -2,7 +2,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
 const UserCoupon = require('../models/UserCoupon');
-const { createAndSendNotification } = require('./notificationController');
+const { createAndSendNotification, notifyAdminsOfNewOrder } = require('./notificationController');
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -166,6 +166,14 @@ exports.createOrder = async (req, res) => {
     });
 
     const createdOrder = await order.save();
+
+    // Notify admins about the new order
+    try {
+      const io = req.app.get('socketio');
+      await notifyAdminsOfNewOrder(io, createdOrder);
+    } catch (adminNotificationError) {
+      console.error('Error sending new order notification to admins:', adminNotificationError);
+    }
 
     // Send order confirmation notification
     try {
