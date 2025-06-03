@@ -270,4 +270,6 @@ router.route('/:id').delete(auth, deleteNotification);
  *         description: Lỗi server
  */
 
+router.route('/').get(auth, adminAuth, getAllNotifications);
+
 module.exports = router;

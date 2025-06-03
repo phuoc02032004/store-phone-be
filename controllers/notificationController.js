@@ -142,6 +142,14 @@ const deleteNotification = asyncHandler(async (req, res) => {
   res.status(200).json({ message: 'Notification deleted successfully' });
 });
 
+// @desc    Get all notifications (Admin only)
+// @route   GET /api/notifications
+// @access  Private/Admin
+const getAllNotifications = asyncHandler(async (req, res) => {
+  const notifications = await Notify.find().sort({ createdAt: -1 });
+  res.status(200).json(notifications);
+});
+
 module.exports = {
   sendNotification,
   getMyNotifications,
@@ -150,4 +158,5 @@ module.exports = {
   deleteNotification,
   createAndSendNotification,
   emitNotificationEvent,
+  getAllNotifications,
 };
