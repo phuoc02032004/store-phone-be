@@ -32,14 +32,13 @@ const createProductReview = asyncHandler(async (req, res) => {
     }
 
 
-    // Kiểm tra xem có tên người dùng không
     if (!req.user || !req.user.username) {
       res.status(400);
       throw new Error('User information not found');
     }
 
     const review = new Review({
-      name: req.user.username, // Sử dụng username thay vì name
+      name: req.user.username, 
       rating: Number(rating),
       comment,
       user: req.user._id,

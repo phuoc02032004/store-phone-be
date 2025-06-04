@@ -155,7 +155,6 @@ const getAllNotifications = asyncHandler(async (req, res) => {
 // @access  Internal/Private
 const notifyAdminsOfNewOrder = async (io, orderDetails) => {
   try {
-    // Find all users who are admins
     const adminUsers = await User.find({ $or: [{ isAdmin: true }, { role: 'admin' }] });
 
     if (adminUsers.length === 0) {
@@ -164,21 +163,22 @@ const notifyAdminsOfNewOrder = async (io, orderDetails) => {
     }
 
     const notificationPromises = adminUsers.map(async (adminUser) => {
-      const title = 'New Order Placed';
-      const body = `A new order (ID: ${orderDetails._id}) has been placed by ${orderDetails.user.username}. Total: ${orderDetails.totalPrice}`;
+      const orderUser = await User.findById(orderDetails.user);
+
+      const title = 'Đơn hàng mới được đặt';
+      const body = `Đơn hàng mới (ID: ${orderDetails._id.toString().slice(-6)}) đã được đặt bởi ${orderUser ? orderUser.username : 'Người dùng không xác định'}. Tổng cộng: ${orderDetails.finalAmount ? orderDetails.finalAmount.toLocaleString('vi-VN') : 'Chưa xác định'} VNĐ`;
       const data = {
         orderId: orderDetails._id.toString(),
-        userId: orderDetails.user._id.toString(),
+        userId: orderDetails.user.toString(),
         type: 'new_order_admin',
       };
 
-      // Use the existing helper to create and send the notification
       return createAndSendNotification(io, {
         title,
         body,
         data,
         recipientId: adminUser._id,
-        fcmToken: adminUser.fcmToken, // Pass FCM token if available
+        fcmToken: adminUser.fcmToken,
       });
     });
 
@@ -201,5 +201,5 @@ module.exports = {
   createAndSendNotification,
   emitNotificationEvent,
   getAllNotifications,
-  notifyAdminsOfNewOrder, // Export the new function
+  notifyAdminsOfNewOrder,
 };

@@ -78,7 +78,6 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Tính tổng giá trị đơn hàng và áp dụng giảm giá/phí vận chuyển trước khi lưu
 orderSchema.pre('save', function(next) {
   let subtotal = 0;
   if (this.items && this.items.length > 0) {

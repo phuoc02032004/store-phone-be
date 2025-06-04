@@ -167,7 +167,6 @@ exports.createOrder = async (req, res) => {
 
     const createdOrder = await order.save();
 
-    // Notify admins about the new order
     try {
       const io = req.app.get('socketio');
       await notifyAdminsOfNewOrder(io, createdOrder);
@@ -175,7 +174,6 @@ exports.createOrder = async (req, res) => {
       console.error('Error sending new order notification to admins:', adminNotificationError);
     }
 
-    // Send order confirmation notification
     try {
         
       const io = req.app.get('socketio');
@@ -216,7 +214,6 @@ exports.updateOrderStatus = async (req, res) => {
 
     const updatedOrder = await order.save();
 
-    // Send notification based on order status
     let notificationTitle = '';
     let notificationBody = '';
     let notificationType = '';
@@ -296,7 +293,6 @@ exports.cancelOrder = async (req, res) => {
     order.orderStatus = 'CANCELLED';
     await order.save();
 
-    // Send order cancellation notification
     try {
       const io = req.app.get('socketio');
       await createAndSendNotification(io, {

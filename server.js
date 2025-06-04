@@ -24,12 +24,11 @@ const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // Allow all origins for now, restrict in production
+    origin: "*", 
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
   }
 });
 
-// Make io accessible globally or pass it to controllers
 app.set('socketio', io);
 
 app.use(cors());

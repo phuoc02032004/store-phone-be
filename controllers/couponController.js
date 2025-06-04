@@ -7,7 +7,6 @@ const { sendNotification, createAndSendNotification } = require('./notificationC
 // @access  Private/Admin
 exports.createCoupon = async (req, res) => {
     try {
-        // Handle empty string for giftProductId
         if (req.body.giftProductId === '') {
             req.body.giftProductId = undefined;
         }
@@ -16,11 +15,9 @@ exports.createCoupon = async (req, res) => {
         console.log(req.body);
         await coupon.save();
 
-        // Send notification to all users about the new promotion
         const users = await User.find({});
         for (const user of users) {
             try {
-                // Call createAndSendNotification directly
                 await createAndSendNotification(req.app.get('socketio'), {
                     recipientId: user._id.toString(),
                     title: '📣 Thông báo chương trình khuyến mãi mới',
@@ -31,7 +28,6 @@ exports.createCoupon = async (req, res) => {
                     },
                 });
             } catch (notificationError) {
-                // Log the error but continue sending to other users
                 console.error(`Error sending promotion notification to user ${user._id}:`, notificationError);
             }
         }
@@ -93,7 +89,6 @@ exports.getCouponByCode = async (req, res) => {
 // @access  Private/Admin
 exports.updateCoupon = async (req, res) => {
     try {
-        // Handle empty string for giftProductId
         if (req.body.giftProductId === '') {
             req.body.giftProductId = undefined;
         }

@@ -216,7 +216,7 @@ exports.createProduct = async (req, res) => {
     });
 
     const savedProduct = await product.save();
-    await savedProduct.populate('category', 'name'); // Populate sau khi lưu
+    await savedProduct.populate('category', 'name'); 
 
     res.status(201).json({ message: 'Sản phẩm được tạo thành công', product: savedProduct });
   } catch (error) {
@@ -257,7 +257,6 @@ exports.updateProduct = async (req, res) => {
 
     if (req.file && req.file.buffer) {
       try {
-        // (Tùy chọn) Xóa ảnh cũ trên Cloudinary trước khi tải ảnh mới
         // if (product.imagePublicId) {
         //   await cloudinary.uploader.destroy(product.imagePublicId);
         // }
@@ -339,18 +338,15 @@ exports.getProductsByCategory = async (req, res) => {
   try {
     const { category: categoryId } = req.params;
 
-    // Validate MongoDB ObjectId format
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
       return res.status(400).json({ message: 'ID danh mục không hợp lệ.' });
     }
 
-    // Check if category exists
     const categoryExists = await Category.findById(categoryId);
     if (!categoryExists) {
       return res.status(404).json({ message: 'Danh mục không tìm thấy.' });
     }
 
-    // Find products with populated category
     const products = await Product.find({ category: categoryId }).populate('category', 'name');
     
     if (!products || products.length === 0) {

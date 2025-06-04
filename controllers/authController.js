@@ -143,7 +143,6 @@ const getProfile = async (req, res) => {
  */
 const promoteToAdmin = async (req, res) => {
   try {
-    // Kiểm tra xem người thực hiện có phải là admin không (cần middleware)
     // if (req.user.role !== 'admin') {
     //   return res.status(403).json({ status: 'error', message: 'Forbidden: Only admins can promote users' });
     // }
