@@ -5,6 +5,7 @@ const dotenv = require('dotenv').config();
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const http = require('http');
+const { Server } = require('socket.io');
 
 const connectDB = require('./config/db');
 
@@ -21,6 +22,14 @@ const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*", 
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+  }
+});
+
+app.set('socketio', io);
 
 app.use(cors());
 app.use(express.json());
