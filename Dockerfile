@@ -10,6 +10,7 @@ RUN npm install
 
 # Copy the rest of the application code, EXCLUDING .env
 COPY . .
+RUN rm .env
 
 # Expose the port the app runs on
 EXPOSE 5000
