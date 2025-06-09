@@ -3,15 +3,6 @@ const admin = require('../config/firebaseAdmin');
 const Notify = require('../models/Notify');
 const User = require('../models/User');
 
-// Helper function to emit notification events
-const emitNotificationEvent = (io, recipientId, eventName, data) => {
-  if (io) {
-    io.to(recipientId).emit(eventName, data);
-    console.log(`Emitted '${eventName}' to user ${recipientId}`);
-  } else {
-    console.warn('Socket.IO instance not available for emitting notification.');
-  }
-};
 
 // @desc    Create and send a notification (internal helper)
 const createAndSendNotification = async (io, { title, body, imageUrl, data, recipientId, fcmToken }) => {
@@ -199,7 +190,6 @@ module.exports = {
   markNotificationAsRead,
   deleteNotification,
   createAndSendNotification,
-  emitNotificationEvent,
   getAllNotifications,
   notifyAdminsOfNewOrder,
 };
