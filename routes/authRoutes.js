@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { login, register, getProfile, promoteToAdmin, changePassword } = require('../controllers/authController');
+const { login, register, getProfile, promoteToAdmin, changePassword, forgotPassword, resetPassword, verifyEmail } = require('../controllers/authController');
 const { auth, adminAuth } = require('../middlewares/authMiddleware');
 
 /**
@@ -69,6 +69,93 @@ const { auth, adminAuth } = require('../middlewares/authMiddleware');
  *         token:
  *           type: string
  *           description: JWT token
+ */
+
+/**
+ * @swagger
+ * /api/auth/forgotpassword:
+ *   post:
+ *     summary: Request password reset
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User email to send reset code
+ *     responses:
+ *       200:
+ *         description: Password reset code sent if email exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Mã đặt lại mật khẩu đã được gửi đến email của bạn.
+ *       400:
+ *         description: Email not provided
+ *       500:
+ *         description: Server error or error sending email
+ */
+
+/**
+ * @swagger
+ * /api/auth/resetpassword:
+ *   put:
+ *     summary: Reset password using code
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - resetToken
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User email
+ *               resetToken:
+ *                 type: string
+ *                 description: The reset code received via email
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 description: The new password
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Mật khẩu của bạn đã được đặt lại thành công.
+ *       400:
+ *         description: Invalid input or invalid/expired reset token
+ *       500:
+ *         description: Server error
  */
 
 /**
@@ -265,4 +352,52 @@ router.put('/promote/:id', auth, adminAuth, promoteToAdmin);
  */
 router.patch('/changepassword', auth, changePassword);
 
+router.post('/forgotpassword', forgotPassword);
+router.put('/resetpassword', resetPassword);
+
+/**
+ * @swagger
+ * /api/auth/verify-email:
+ *   post:
+ *     summary: Verify user email with code
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - verificationCode
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User email
+ *               verificationCode:
+ *                 type: string
+ *                 description: The verification code received via email
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Email của bạn đã được xác minh thành công.
+ *       400:
+ *         description: Invalid input or invalid/expired verification code
+ *       500:
+ *         description: Server error
+ */
+router.post('/verify-email', verifyEmail);
+
 module.exports = router;
+
