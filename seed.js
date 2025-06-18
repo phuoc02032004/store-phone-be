@@ -11,17 +11,12 @@ const seedCategories = async () => {
   try {
     console.log('Seeding categories...');
 
-    // Define parent categories
+    // Define parent categories for Apple brand
     const parentCategories = [
       {
-        name: 'Điện thoại',
-        slug: 'dien-thoai',
-        description: 'Các loại điện thoại di động'
-      },
-      {
-        name: 'Laptop',
-        slug: 'laptop',
-        description: 'Các loại máy tính xách tay'
+        name: 'Apple',
+        slug: 'apple',
+        description: 'All Apple brand products'
       }
     ];
 
@@ -39,72 +34,308 @@ const seedCategories = async () => {
       }
     }
 
-    // Find parent category IDs
-    const dienThoaiParent = createdParentCategories.find(c => c.slug === 'dien-thoai');
-    const laptopParent = createdParentCategories.find(c => c.slug === 'laptop');
+    // Find parent category ID
+    const appleParent = createdParentCategories.find(c => c.slug === 'apple');
 
-    // Define child categories
-    const childCategories = [
+    // Define second-level categories (children of Apple)
+    const secondLevelCategories = [
+      {
+        name: 'Mac',
+        slug: 'mac',
+        description: 'Mac computers from Apple',
+        parent: appleParent ? appleParent._id : null,
+        ancestors: appleParent ? [{ _id: appleParent._id, name: appleParent.name, slug: appleParent.slug }] : [],
+        level: appleParent ? 1 : 0
+      },
+      {
+        name: 'iPad',
+        slug: 'ipad',
+        description: 'iPad tablets from Apple',
+        parent: appleParent ? appleParent._id : null,
+        ancestors: appleParent ? [{ _id: appleParent._id, name: appleParent.name, slug: appleParent.slug }] : [],
+        level: appleParent ? 1 : 0
+      },
       {
         name: 'iPhone',
         slug: 'iphone',
-        description: 'iPhone products from Apple',
-        parent: dienThoaiParent ? dienThoaiParent._id : null,
-        ancestors: dienThoaiParent ? [{ _id: dienThoaiParent._id, name: dienThoaiParent.name, slug: dienThoaiParent.slug }] : [],
-        level: dienThoaiParent ? 1 : 0
+        description: 'iPhone smartphones from Apple',
+        parent: appleParent ? appleParent._id : null,
+        ancestors: appleParent ? [{ _id: appleParent._id, name: appleParent.name, slug: appleParent.slug }] : [],
+        level: appleParent ? 1 : 0
       },
       {
-        name: 'Samsung',
-        slug: 'samsung',
-        description: 'Samsung mobile phones',
-        parent: dienThoaiParent ? dienThoaiParent._id : null,
-        ancestors: dienThoaiParent ? [{ _id: dienThoaiParent._id, name: dienThoaiParent.name, slug: dienThoaiParent.slug }] : [],
-        level: dienThoaiParent ? 1 : 0
+        name: 'Watch',
+        slug: 'watch',
+        description: 'Apple Watch smartwatches from Apple',
+        parent: appleParent ? appleParent._id : null,
+        ancestors: appleParent ? [{ _id: appleParent._id, name: appleParent.name, slug: appleParent.slug }] : [],
+        level: appleParent ? 1 : 0
       },
       {
-        name: 'Xiaomi',
-        slug: 'xiaomi',
-        description: 'Xiaomi mobile phones',
-        parent: dienThoaiParent ? dienThoaiParent._id : null,
-        ancestors: dienThoaiParent ? [{ _id: dienThoaiParent._id, name: dienThoaiParent.name, slug: dienThoaiParent.slug }] : [],
-        level: dienThoaiParent ? 1 : 0
+        name: 'Vision',
+        slug: 'vision',
+        description: 'Apple Vision Pro and related products',
+        parent: appleParent ? appleParent._id : null,
+        ancestors: appleParent ? [{ _id: appleParent._id, name: appleParent.name, slug: appleParent.slug }] : [],
+        level: appleParent ? 1 : 0
       },
       {
-        name: 'MacBook',
-        slug: 'macbook',
-        description: 'MacBook laptops from Apple',
-        parent: laptopParent ? laptopParent._id : null,
-        ancestors: laptopParent ? [{ _id: laptopParent._id, name: laptopParent.name, slug: laptopParent.slug }] : [],
-        level: laptopParent ? 1 : 0
+        name: 'AirPods',
+        slug: 'airpods',
+        description: 'AirPods and other audio products from Apple',
+        parent: appleParent ? appleParent._id : null,
+        ancestors: appleParent ? [{ _id: appleParent._id, name: appleParent.name, slug: appleParent.slug }] : [],
+        level: appleParent ? 1 : 0
       },
       {
-        name: 'Asus',
-        slug: 'asus',
-        description: 'Asus laptops',
-        parent: laptopParent ? laptopParent._id : null,
-        ancestors: laptopParent ? [{ _id: laptopParent._id, name: laptopParent.name, slug: laptopParent.slug }] : [],
-        level: laptopParent ? 1 : 0
-      },
-      {
-        name: 'HP',
-        slug: 'hp',
-        description: 'HP laptops',
-        parent: laptopParent ? laptopParent._id : null,
-        ancestors: laptopParent ? [{ _id: laptopParent._id, name: laptopParent.name, slug: laptopParent.slug }] : [],
-        level: laptopParent ? 1 : 0
+        name: 'RV&Home',
+        slug: 'rv-home',
+        description: 'Apple products for RV and Home automation',
+        parent: appleParent ? appleParent._id : null,
+        ancestors: appleParent ? [{ _id: appleParent._id, name: appleParent.name, slug: appleParent.slug }] : [],
+        level: appleParent ? 1 : 0
       }
     ];
 
-    const createdChildCategories = [];
-    for (const category of childCategories) {
+    const createdSecondLevelCategories = [];
+    for (const category of secondLevelCategories) {
       const existingCategory = await Category.findOne({ slug: category.slug });
       if (!existingCategory) {
         const newCategory = await Category.create(category);
-        createdChildCategories.push(newCategory);
-        console.log(`Created child category: ${category.name}`);
+        createdSecondLevelCategories.push(newCategory);
+        console.log(`Created second-level category: ${category.name}`);
       } else {
-        createdChildCategories.push(existingCategory);
-        console.log(`Child category ${category.name} already exists`);
+        createdSecondLevelCategories.push(existingCategory);
+        console.log(`Second-level category ${category.name} already exists`);
+      }
+    }
+
+    const macParent = createdSecondLevelCategories.find(c => c.slug === 'mac');
+    const ipadParent = createdSecondLevelCategories.find(c => c.slug === 'ipad');
+    const iphoneParent = createdSecondLevelCategories.find(c => c.slug === 'iphone');
+    const watchParent = createdSecondLevelCategories.find(c => c.slug === 'watch');
+    const visionParent = createdSecondLevelCategories.find(c => c.slug === 'vision');
+    const airpodsParent = createdSecondLevelCategories.find(c => c.slug === 'airpods');
+    const rvHomeParent = createdSecondLevelCategories.find(c => c.slug === 'rv-home');
+
+    const thirdLevelCategories = [
+      {
+        name: 'MacBook Air',
+        slug: 'macbook-air',
+        description: 'MacBook Air laptops from Apple',
+        parent: macParent ? macParent._id : null,
+        ancestors: macParent ? [...appleParent.ancestors, { _id: macParent._id, name: macParent.name, slug: macParent.slug }] : [],
+        level: macParent ? 2 : 0
+      },
+      {
+        name: 'MacBook Pro',
+        slug: 'macbook-pro',
+        description: 'MacBook Pro laptops from Apple',
+        parent: macParent ? macParent._id : null,
+        ancestors: macParent ? [...appleParent.ancestors, { _id: macParent._id, name: macParent.name, slug: macParent.slug }] : [],
+        level: macParent ? 2 : 0
+      },
+      {
+        name: 'Mac Mini',
+        slug: 'mac-mini',
+        description: 'Mac Mini desktop computers from Apple',
+        parent: macParent ? macParent._id : null,
+        ancestors: macParent ? [...appleParent.ancestors, { _id: macParent._id, name: macParent.name, slug: macParent.slug }] : [],
+        level: macParent ? 2 : 0
+      },
+      {
+        name: 'Mac Studio',
+        slug: 'mac-studio',
+        description: 'Mac Studio desktop computers from Apple',
+        parent: macParent ? macParent._id : null,
+        ancestors: macParent ? [...appleParent.ancestors, { _id: macParent._id, name: macParent.name, slug: macParent.slug }] : [],
+        level: macParent ? 2 : 0
+      },
+      {
+        name: 'Mac Pro',
+        slug: 'mac-pro',
+        description: 'Mac Pro desktop computers from Apple',
+        parent: macParent ? macParent._id : null,
+        ancestors: macParent ? [...appleParent.ancestors, { _id: macParent._id, name: macParent.name, slug: macParent.slug }] : [],
+        level: macParent ? 2 : 0
+      },
+      {
+        name: 'iMac',
+        slug: 'imac',
+        description: 'iMac all-in-one desktop computers from Apple',
+        parent: macParent ? macParent._id : null,
+        ancestors: macParent ? [...appleParent.ancestors, { _id: macParent._id, name: macParent.name, slug: macParent.slug }] : [],
+        level: macParent ? 2 : 0
+      },
+      {
+        name: 'iPad Pro',
+        slug: 'ipad-pro',
+        description: 'iPad Pro models',
+        parent: ipadParent ? ipadParent._id : null,
+        ancestors: ipadParent ? [...appleParent.ancestors, { _id: ipadParent._id, name: ipadParent.name, slug: ipadParent.slug }] : [],
+        level: ipadParent ? 2 : 0
+      },
+      {
+        name: 'iPad Air',
+        slug: 'ipad-air',
+        description: 'iPad Air models',
+        parent: ipadParent ? ipadParent._id : null,
+        ancestors: ipadParent ? [...appleParent.ancestors, { _id: ipadParent._id, name: ipadParent.name, slug: ipadParent.slug }] : [],
+        level: ipadParent ? 2 : 0
+      },
+      {
+        name: 'iPad Mini',
+        slug: 'ipad-mini',
+        description: 'iPad Mini models',
+        parent: ipadParent ? ipadParent._id : null,
+        ancestors: ipadParent ? [...appleParent.ancestors, { _id: ipadParent._id, name: ipadParent.name, slug: ipadParent.slug }] : [],
+        level: ipadParent ? 2 : 0
+      },
+      // iPhone sub-categories
+      {
+        name: 'iPhone Pro Max',
+        slug: 'iphone-pro-max',
+        description: 'iPhone Pro Max models',
+        parent: iphoneParent ? iphoneParent._id : null,
+        ancestors: iphoneParent ? [...appleParent.ancestors, { _id: iphoneParent._id, name: iphoneParent.name, slug: iphoneParent.slug }] : [],
+        level: iphoneParent ? 2 : 0
+      },
+      {
+        name: 'iPhone Pro',
+        slug: 'iphone-pro',
+        description: 'iPhone Pro models',
+        parent: iphoneParent ? iphoneParent._id : null,
+        ancestors: iphoneParent ? [...appleParent.ancestors, { _id: iphoneParent._id, name: iphoneParent.name, slug: iphoneParent.slug }] : [],
+        level: iphoneParent ? 2 : 0
+      },
+      {
+        name: 'iPhone Standard',
+        slug: 'iphone-standard',
+        description: 'Standard iPhone models',
+        parent: iphoneParent ? iphoneParent._id : null,
+        ancestors: iphoneParent ? [...appleParent.ancestors, { _id: iphoneParent._id, name: iphoneParent.name, slug: iphoneParent.slug }] : [],
+        level: iphoneParent ? 2 : 0
+      },
+      {
+        name: 'iPhone SE',
+        slug: 'iphone-se',
+        description: 'iPhone SE models',
+        parent: iphoneParent ? iphoneParent._id : null,
+        ancestors: iphoneParent ? [...appleParent.ancestors, { _id: iphoneParent._id, name: iphoneParent.name, slug: iphoneParent.slug }] : [],
+        level: iphoneParent ? 2 : 0
+      },
+      {
+        name: 'iPhone Plus',
+        slug: 'iphone-plus',
+        description: 'iPhone Plus models',
+        parent: iphoneParent ? iphoneParent._id : null,
+        ancestors: iphoneParent ? [...appleParent.ancestors, { _id: iphoneParent._id, name: iphoneParent.name, slug: iphoneParent.slug }] : [],
+        level: iphoneParent ? 2 : 0
+      },
+      {
+        name: 'iPhone Mini',
+        slug: 'iphone-mini',
+        description: 'iPhone Mini models',
+        parent: iphoneParent ? iphoneParent._id : null,
+        ancestors: iphoneParent ? [...appleParent.ancestors, { _id: iphoneParent._id, name: iphoneParent.name, slug: iphoneParent.slug }] : [],
+        level: iphoneParent ? 2 : 0
+      },
+      {
+        name: 'iPhone Plus',
+        slug: 'iphone-plus',
+        description: 'iPhone Plus models',
+        parent: iphoneParent ? iphoneParent._id : null,
+        ancestors: iphoneParent ? [...appleParent.ancestors, { _id: iphoneParent._id, name: iphoneParent.name, slug: iphoneParent.slug }] : [],
+        level: iphoneParent ? 2 : 0
+      },
+      {
+        name: 'iPhone Mini',
+        slug: 'iphone-mini',
+        description: 'iPhone Mini models',
+        parent: iphoneParent ? iphoneParent._id : null,
+        ancestors: iphoneParent ? [...appleParent.ancestors, { _id: iphoneParent._id, name: iphoneParent.name, slug: iphoneParent.slug }] : [],
+        level: iphoneParent ? 2 : 0
+      },
+      // Watch sub-categories
+      {
+        name: 'Apple Watch Ultra',
+        slug: 'apple-watch-ultra',
+        description: 'Apple Watch Ultra models',
+        parent: watchParent ? watchParent._id : null,
+        ancestors: watchParent ? [...appleParent.ancestors, { _id: watchParent._id, name: watchParent.name, slug: watchParent.slug }] : [],
+        level: watchParent ? 2 : 0
+      },
+      {
+        name: 'Apple Watch Series',
+        slug: 'apple-watch-series',
+        description: 'Apple Watch Series models',
+        parent: watchParent ? watchParent._id : null,
+        ancestors: watchParent ? [...appleParent.ancestors, { _id: watchParent._id, name: watchParent.name, slug: watchParent.slug }] : [],
+        level: watchParent ? 2 : 0
+      },
+      // Vision sub-categories
+      {
+        name: 'Vision Pro',
+        slug: 'vision-pro',
+        description: 'Apple Vision Pro models',
+        parent: visionParent ? visionParent._id : null,
+        ancestors: visionParent ? [...appleParent.ancestors, { _id: visionParent._id, name: visionParent.name, slug: visionParent.slug }] : [],
+        level: visionParent ? 2 : 0
+      },
+      // AirPods sub-categories
+      {
+        name: 'AirPods Pro',
+        slug: 'airpods-pro',
+        description: 'AirPods Pro models',
+        parent: airpodsParent ? airpodsParent._id : null,
+        ancestors: airpodsParent ? [...appleParent.ancestors, { _id: airpodsParent._id, name: airpodsParent.name, slug: airpodsParent.slug }] : [],
+        level: airpodsParent ? 2 : 0
+      },
+      {
+        name: 'AirPods Max',
+        slug: 'airpods-max',
+        description: 'AirPods Max models',
+        parent: airpodsParent ? airpodsParent._id : null,
+        ancestors: airpodsParent ? [...appleParent.ancestors, { _id: airpodsParent._id, name: airpodsParent.name, slug: airpodsParent.slug }] : [],
+        level: airpodsParent ? 2 : 0
+      },
+      {
+        name: 'AirPods Standard',
+        slug: 'airpods-standard',
+        description: 'Standard AirPods models',
+        parent: airpodsParent ? airpodsParent._id : null,
+        ancestors: airpodsParent ? [...appleParent.ancestors, { _id: airpodsParent._id, name: airpodsParent.name, slug: airpodsParent.slug }] : [],
+        level: airpodsParent ? 2 : 0
+      },
+      // RV&Home sub-categories
+      {
+        name: 'HomePod',
+        slug: 'homepod',
+        description: 'HomePod smart speakers',
+        parent: rvHomeParent ? rvHomeParent._id : null,
+        ancestors: rvHomeParent ? [...appleParent.ancestors, { _id: rvHomeParent._id, name: rvHomeParent.name, slug: rvHomeParent.slug }] : [],
+        level: rvHomeParent ? 2 : 0
+      },
+      {
+        name: 'Apple TV',
+        slug: 'apple-tv',
+        description: 'Apple TV streaming devices',
+        parent: rvHomeParent ? rvHomeParent._id : null,
+        ancestors: rvHomeParent ? [...appleParent.ancestors, { _id: rvHomeParent._id, name: rvHomeParent.name, slug: rvHomeParent.slug }] : [],
+        level: rvHomeParent ? 2 : 0
+      }
+    ];
+
+    const createdThirdLevelCategories = [];
+    for (const category of thirdLevelCategories) {
+      const existingCategory = await Category.findOne({ slug: category.slug });
+      if (!existingCategory) {
+        const newCategory = await Category.create(category);
+        createdThirdLevelCategories.push(newCategory);
+        console.log(`Created third-level category: ${category.name}`);
+      } else {
+        createdThirdLevelCategories.push(existingCategory);
+        console.log(`Third-level category ${category.name} already exists`);
       }
     }
 
@@ -120,290 +351,324 @@ const seedProducts = async (categories) => {
   try {
     console.log('Seeding products...');
 
-    const iPhoneCategory = categories.find(c => c.slug === 'iphone');
-    const samsungCategory = categories.find(c => c.slug === 'samsung');
-    const xiaomiCategory = categories.find(c => c.slug === 'xiaomi');
-    const macBookCategory = categories.find(c => c.slug === 'macbook');
-    const asusCategory = categories.find(c => c.slug === 'asus');
-    const hpCategory = categories.find(c => c.slug === 'hp');
+    const macBookAirCategory = categories.find(c => c.slug === 'macbook-air');
+    const macBookProCategory = categories.find(c => c.slug === 'macbook-pro');
+    const macMiniCategory = categories.find(c => c.slug === 'mac-mini');
+    const macStudioCategory = categories.find(c => c.slug === 'mac-studio');
+    const macProCategory = categories.find(c => c.slug === 'mac-pro');
+    const iMacCategory = categories.find(c => c.slug === 'imac');
+    const iPadProCategory = categories.find(c => c.slug === 'ipad-pro');
+    const iPadAirCategory = categories.find(c => c.slug === 'ipad-air');
+    const iPadMiniCategory = categories.find(c => c.slug === 'ipad-mini');
+    const iPhoneProMaxCategory = categories.find(c => c.slug === 'iphone-pro-max');
+    const iPhoneProCategory = categories.find(c => c.slug === 'iphone-pro');
+    const iPhoneStandardCategory = categories.find(c => c.slug === 'iphone-standard');
+    const iPhoneSECategory = categories.find(c => c.slug === 'iphone-se');
+    const appleWatchUltraCategory = categories.find(c => c.slug === 'apple-watch-ultra');
+    const appleWatchSeriesCategory = categories.find(c => c.slug === 'apple-watch-series');
+    const visionProCategory = categories.find(c => c.slug === 'vision-pro');
+    const airPodsProCategory = categories.find(c => c.slug === 'airpods-pro');
+    const airPodsMaxCategory = categories.find(c => c.slug === 'airpods-max');
+    const airPodsStandardCategory = categories.find(c => c.slug === 'airpods-standard');
+    const homePodCategory = categories.find(c => c.slug === 'homepod');
+    const appleTVCategory = categories.find(c => c.slug === 'apple-tv');
 
     const products = [
       {
-        name: 'iPhone 16',
-        description: 'iPhone 16 với thiết kế mới và hiệu năng vượt trội.',
-        category: iPhoneCategory ? iPhoneCategory._id : null,
+        name: 'MacBook Air M3',
+        description: 'MacBook Air M3 with powerful performance and sleek design.',
+        category: macBookAirCategory ? macBookAirCategory._id : null,
         isNewArrival: true,
         isBestSeller: true,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-1.png',
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/44/331644/macbook-air-13-inch-m3-tgdd-xanh-1-638660181465844583-750x500.jpg',
         variants: [
-          { name: "iPhone 16", variantName: "iPhone 16 128GB - Xanh Titan", color: "Xanh Titan", capacity: "128GB", price: 23990000, stock: 150, sku: "IP16-128-XT" },
-          { name: "iPhone 16", variantName: "iPhone 16 256GB - Xanh Titan", color: "Xanh Titan", capacity: "256GB", price: 26990000, stock: 200, sku: "IP16-256-XT" },
-          { name: "iPhone 16", variantName: "iPhone 16 512GB - Xanh Titan", color: "Xanh Titan", capacity: "512GB", price: 32990000, stock: 80, sku: "IP16-512-XT" },
-          { name: "iPhone 16", variantName: "iPhone 16 128GB - Titan Tự Nhiên", color: "Titan Tự Nhiên", capacity: "128GB", price: 23990000, stock: 120, sku: "IP16-128-TTN" },
-          { name: "iPhone 16", variantName: "iPhone 16 256GB - Titan Tự Nhiên", color: "Titan Tự Nhiên", capacity: "256GB", price: 26990000, stock: 180, sku: "IP16-256-TTN" },
-          { name: "iPhone 16", variantName: "iPhone 16 512GB - Titan Tự Nhiên", color: "Titan Tự Nhiên", capacity: "512GB", price: 32990000, stock: 75, sku: "IP16-512-TTN" },
-          { name: "iPhone 16", variantName: "iPhone 16 128GB - Titan Đen", color: "Titan Đen", capacity: "128GB", price: 23990000, stock: 130, sku: "IP16-128-TD" },
-          { name: "iPhone 16", variantName: "iPhone 16 256GB - Titan Đen", color: "Titan Đen", capacity: "256GB", price: 26990000, stock: 190, sku: "IP16-256-TD" },
-          { name: "iPhone 16", variantName: "iPhone 16 128GB - Hồng Phấn (Giả định)", color: "Hồng Phấn", capacity: "128GB", price: 23990000, stock: 100, sku: "IP16-128-HP" },
-          { name: "iPhone 16", variantName: "iPhone 16 256GB - Vàng Đồng (Giả định)", color: "Vàng Đồng", capacity: "256GB", price: 26990000, stock: 90, sku: "IP16-256-VD" }
+          { name: "MacBook Air M3", variantName: "MacBook Air 13-inch M3 8GB/256GB - Midnight", color: "Midnight", capacity: "8GB/256GB", price: 27990000, stock: 150, sku: "MBA-M3-13-8-256-MN" },
+          { name: "MacBook Air M3", variantName: "MacBook Air 13-inch M3 8GB/512GB - Starlight", color: "Starlight", capacity: "8GB/512GB", price: 30990000, stock: 120, sku: "MBA-M3-13-8-512-SL" },
+          { name: "MacBook Air M3", variantName: "MacBook Air 15-inch M3 8GB/256GB - Space Gray", color: "Space Gray", capacity: "8GB/256GB", price: 32990000, stock: 100, sku: "MBA-M3-15-8-256-SG" },
+          { name: "MacBook Air M3", variantName: "MacBook Air 15-inch M3 16GB/512GB - Silver", color: "Silver", capacity: "16GB/512GB", price: 38990000, stock: 80, sku: "MBA-M3-15-16-512-SV" }
         ]
       },
       {
-        name: 'iPhone 16 Pro',
-        description: 'iPhone 16 Pro với camera chuyên nghiệp và chip A18 Bionic.',
-        category: iPhoneCategory ? iPhoneCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: true,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro_1.png',
-        variants: [
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 256GB - Titan Đen", color: "Titan Đen", capacity: "256GB", price: 30990000, stock: 100, sku: "IP16P-256-TD" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 512GB - Titan Đen", color: "Titan Đen", capacity: "512GB", price: 35990000, stock: 70, sku: "IP16P-512-TD" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 1TB - Titan Đen", color: "Titan Đen", capacity: "1TB", price: 41990000, stock: 40, sku: "IP16P-1TB-TD" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 256GB - Titan Trắng", color: "Titan Trắng", capacity: "256GB", price: 30990000, stock: 90, sku: "IP16P-256-TT" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 512GB - Titan Trắng", color: "Titan Trắng", capacity: "512GB", price: 35990000, stock: 65, sku: "IP16P-512-TT" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 1TB - Titan Trắng", color: "Titan Trắng", capacity: "1TB", price: 41990000, stock: 35, sku: "IP16P-1TB-TT" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 256GB - Titan Tự Nhiên", color: "Titan Tự Nhiên", capacity: "256GB", price: 30990000, stock: 110, sku: "IP16P-256-TTN" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 512GB - Titan Tự Nhiên", color: "Titan Tự Nhiên", capacity: "512GB", price: 35990000, stock: 80, sku: "IP16P-512-TTN" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 256GB - Xanh Dương Titan (Giả định)", color: "Xanh Dương Titan", capacity: "256GB", price: 30990000, stock: 80, sku: "IP16P-256-XDT" },
-          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 512GB - Xanh Dương Titan (Giả định)", color: "Xanh Dương Titan", capacity: "512GB", price: 35990000, stock: 50, sku: "IP16P-512-XDT" }
-        ]
-      },
-      {
-        name: 'iPhone 16 Pro Max',
-        description: 'iPhone 16 Pro Max với màn hình lớn và thời lượng pin khủng.',
-        category: iPhoneCategory ? iPhoneCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: true,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png',
-        variants: [
-          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 256GB - Titan Đen", color: "Titan Đen", capacity: "256GB", price: 33990000, stock: 90, sku: "IP16PM-256-TD" },
-          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 512GB - Titan Đen", color: "Titan Đen", capacity: "512GB", price: 38990000, stock: 60, sku: "IP16PM-512-TD" },
-          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 1TB - Titan Đen", color: "Titan Đen", capacity: "1TB", price: 44990000, stock: 30, sku: "IP16PM-1TB-TD" },
-          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 256GB - Titan Trắng", color: "Titan Trắng", capacity: "256GB", price: 33990000, stock: 85, sku: "IP16PM-256-TT" },
-          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 512GB - Titan Trắng", color: "Titan Trắng", capacity: "512GB", price: 38990000, stock: 55, sku: "IP16PM-512-TT" },
-          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 1TB - Titan Trắng", color: "Titan Trắng", capacity: "1TB", price: 44990000, stock: 25, sku: "IP16PM-1TB-TT" },
-          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 256GB - Titan Tự Nhiên", color: "Titan Tự Nhiên", capacity: "256GB", price: 33990000, stock: 100, sku: "IP16PM-256-TTN" },
-          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 512GB - Titan Tự Nhiên", color: "Titan Tự Nhiên", capacity: "512GB", price: 38990000, stock: 70, sku: "IP16PM-512-TTN" }
-        ]
-      },
-
-      // Samsung Products (at least 3)
-      {
-        name: 'Samsung Galaxy S25 Ultra',
-        description: 'Samsung Galaxy S25 Ultra với camera 200MP và bút S Pen.',
-        category: samsungCategory ? samsungCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: true,
-        image: 'https://cdn2.fptshop.com.vn/unsafe/384x0/filters:format(webp):quality(75)/galaxy_s25_ultra_titan_silver_blue_4_3f0c8ea577.png', // Placeholder image
-        variants: [
-          { name: "Galaxy S25 Ultra", variantName: "Galaxy S25 Ultra 256GB - Đen", color: "Đen", capacity: "256GB", price: 28990000, stock: 120, sku: "SS-S25U-256-D" },
-          { name: "Galaxy S25 Ultra", variantName: "Galaxy S25 Ultra 512GB - Trắng", color: "Trắng", capacity: "512GB", price: 31990000, stock: 80, sku: "SS-S25U-512-T" },
-          { name: "Galaxy S25 Ultra", variantName: "Galaxy S25 Ultra 1TB - Xanh", color: "Xanh", capacity: "1TB", price: 36990000, stock: 50, sku: "SS-S25U-1TB-X" },
-          { name: "Galaxy S25 Ultra", variantName: "Galaxy S25 Ultra 256GB - Tím", color: "Tím", capacity: "256GB", price: 28990000, stock: 90, sku: "SS-S25U-256-Tim" }
-        ]
-      },
-      {
-        name: 'Samsung Galaxy Z Fold 6',
-        description: 'Samsung Galaxy Z Fold 6 màn hình gập đột phá.',
-        category: samsungCategory ? samsungCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: false,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-fold-6-xanh_5_.png', // Placeholder image
-        variants: [
-          { name: "Galaxy Z Fold 6", variantName: "Galaxy Z Fold 6 256GB - Đen", color: "Đen", capacity: "256GB", price: 35990000, stock: 70, sku: "SS-ZF7-256-D" },
-          { name: "Galaxy Z Fold 6", variantName: "Galaxy Z Fold 6 512GB - Xanh", color: "Xanh", capacity: "512GB", price: 38990000, stock: 40, sku: "SS-ZF7-512-X" },
-          { name: "Galaxy Z Fold 6", variantName: "Galaxy Z Fold 6 256GB - Bạc", color: "Bạc", capacity: "256GB", price: 35990000, stock: 50, sku: "SS-ZF7-256-B" },
-          { name: "Galaxy Z Fold 6", variantName: "Galaxy Z Fold 6 512GB - Kem", color: "Kem", capacity: "512GB", price: 38990000, stock: 30, sku: "SS-ZF7-512-K" }
-        ]
-      },
-      {
-        name: 'Samsung Galaxy A56',
-        description: 'Samsung Galaxy A56 pin trâu, camera tốt.',
-        category: samsungCategory ? samsungCategory._id : null,
-        isNewArrival: false,
-        isBestSeller: true,
-        image: 'https://cdn2.cellphones.com.vn/x/media/catalog/product/d/i/dien-thoai-samsung-galaxy-a56_3_.png?_gl=1*187l4hm*_gcl_au*MjAzMzg2MTcwOS4xNzQ3ODA2ODky*_ga*MjE0NjMyMjc2MS4xNzI2NzA4Mzc0*_ga_QLK8WFHNK9*czE3NDk0NTMxMDYkbzIyJGcxJHQxNzQ5NDUzMjcxJGoyOCRsMCRoMTE4NTkwNDkzMQ..', // Placeholder image
-        variants: [
-          { name: "Galaxy A56", variantName: "Galaxy A56 128GB - Đen", color: "Đen", capacity: "128GB", price: 7990000, stock: 200, sku: "SS-A56-128-D" },
-          { name: "Galaxy A56", variantName: "Galaxy A56 256GB - Trắng", color: "Trắng", capacity: "256GB", price: 8990000, stock: 150, sku: "SS-A56-256-T" },
-          { name: "Galaxy A56", variantName: "Galaxy A56 128GB - Xanh", color: "Xanh", capacity: "128GB", price: 7990000, stock: 180, sku: "SS-A56-128-X" },
-          { name: "Galaxy A56", variantName: "Galaxy A56 256GB - Hồng", color: "Hồng", capacity: "256GB", price: 8990000, stock: 130, sku: "SS-A56-256-H" }
-        ]
-      },
-
-      // Xiaomi Products (at least 3)
-      {
-        name: 'Xiaomi 15 Pro',
-        description: 'Xiaomi 15 Pro hiệu năng mạnh mẽ.',
-        category: xiaomiCategory ? xiaomiCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: true,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-xiaomi-redmi-note-14-pro_2__2_1.png', // Placeholder image
-        variants: [
-          { name: "Xiaomi 15 Pro", variantName: "Xiaomi 15 Pro 256GB - Đen", color: "Đen", capacity: "256GB", price: 18990000, stock: 100, sku: "XM-15P-256-D" },
-          { name: "Xiaomi 15 Pro", variantName: "Xiaomi 15 Pro 512GB - Trắng", color: "Trắng", capacity: "512GB", price: 20990000, stock: 70, sku: "XM-15P-512-T" },
-          { name: "Xiaomi 15 Pro", variantName: "Xiaomi 15 Pro 256GB - Xanh", color: "Xanh", capacity: "256GB", price: 18990000, stock: 80, sku: "XM-15P-256-X" },
-          { name: "Xiaomi 15 Pro", variantName: "Xiaomi 15 Pro 512GB - Tím", color: "Tím", capacity: "512GB", price: 20990000, stock: 60, sku: "XM-15P-512-Tim" }
-        ]
-      },
-      {
-        name: 'Xiaomi Redmi Note 15 Pro',
-        description: 'Redmi Note 15 Pro giá tốt, cấu hình cao.',
-        category: xiaomiCategory ? xiaomiCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: false,
-        image: 'https://hanhtech.com/wp-content/uploads/2025/06/xiaomi-redmi-note-15-pro-8gb-256gb-chinh-hang-moi-100-nguyen-seal-image.jpg', // Placeholder image
-        variants: [
-          { name: "Redmi Note 15 Pro", variantName: "Redmi Note 15 Pro 128GB - Xanh", color: "Xanh", capacity: "128GB", price: 6990000, stock: 150, sku: "XM-RN15P-128-X" },
-          { name: "Redmi Note 15 Pro", variantName: "Redmi Note 15 Pro 256GB - Đen", color: "Đen", capacity: "256GB", price: 7990000, stock: 120, sku: "XM-RN15P-256-D" },
-          { name: "Redmi Note 15 Pro", variantName: "Redmi Note 15 Pro 128GB - Trắng", color: "Trắng", capacity: "128GB", price: 6990000, stock: 130, sku: "XM-RN15P-128-T" },
-          { name: "Redmi Note 15 Pro", variantName: "Redmi Note 15 Pro 256GB - Đỏ", color: "Đỏ", capacity: "256GB", price: 7990000, stock: 100, sku: "XM-RN15P-256-Do" }
-        ]
-      },
-      {
-        name: 'Xiaomi Poco X7 Pro',
-        description: 'Poco X7 Pro chuyên game.',
-        category: xiaomiCategory ? xiaomiCategory._id : null,
-        isNewArrival: false,
-        isBestSeller: true,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-poco-x7-pro-5g_2_.png', // Placeholder image
-        variants: [
-          { name: "Poco X7 Pro", variantName: "Poco X7 Pro 128GB - Vàng", color: "Vàng", capacity: "128GB", price: 5990000, stock: 180, sku: "XM-PX7P-128-V" },
-          { name: "Poco X7 Pro", variantName: "Poco X7 Pro 256GB - Đen", color: "Đen", capacity: "256GB", price: 6490000, stock: 140, sku: "XM-PX7P-256-D" },
-          { name: "Poco X7 Pro", variantName: "Poco X7 Pro 128GB - Xanh", color: "Xanh", capacity: "128GB", price: 5990000, stock: 160, sku: "XM-PX7P-128-X" },
-          { name: "Poco X7 Pro", variantName: "Poco X7 Pro 256GB - Trắng", color: "Trắng", capacity: "256GB", price: 6490000, stock: 120, sku: "XM-PX7P-256-T" }
-        ]
-      },
-
-      // MacBook Products (at least 3)
-      {
-        name: 'MacBook Air 13" M3',
-        description: 'MacBook Air 13 inch với chip M3 mạnh mẽ và thiết kế siêu mỏng.',
-        category: macBookCategory ? macBookCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: true,
-        image: 'https://cdn.tgdd.vn/Products/Images/44/322612/macbook-air-13-inch-m3-2024-1-3-750x500.jpg',
-        variants: [
-          { name: "MacBook Air 13\" M3", variantName: "MacBook Air 13\" M3 8GB/256GB - Midnight", color: "Midnight", capacity: "8GB/256GB", price: 27990000, stock: 80, sku: "MBA13M3-8-256-MN" },
-          { name: "MacBook Air 13\" M3", variantName: "MacBook Air 13\" M3 8GB/512GB - Starlight", color: "Starlight", capacity: "8GB/512GB", price: 30990000, stock: 60, sku: "MBA13M3-8-512-SL" },
-          { name: "MacBook Air 13\" M3", variantName: "MacBook Air 13\" M3 16GB/512GB - Space Gray", color: "Space Gray", capacity: "16GB/512GB", price: 35990000, stock: 40, sku: "MBA13M3-16-512-SG" },
-          { name: "MacBook Air 13\" M3", variantName: "MacBook Air 13\" M3 8GB/256GB - Silver", color: "Silver", capacity: "8GB/256GB", price: 27990000, stock: 70, sku: "MBA13M3-8-256-SV" }
-        ]
-      },
-      {
-        name: 'MacBook Pro 14" M3 Pro',
-        description: 'MacBook Pro 14 inch với chip M3 Pro cho hiệu năng vượt trội.',
-        category: macBookCategory ? macBookCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: true,
-        image: 'https://cdn.tgdd.vn/Products/Images/44/318229/macbook-pro-14-inch-m3-2023-acv-1-750x500.jpg',
-        variants: [
-          { name: "MacBook Pro 14\" M3 Pro", variantName: "MacBook Pro 14\" M3 Pro 18GB/512GB - Space Black", color: "Space Black", capacity: "18GB/512GB", price: 49990000, stock: 50, sku: "MBP14M3P-18-512-SB" },
-          { name: "MacBook Pro 14\" M3 Pro", variantName: "MacBook Pro 14\" M3 Pro 36GB/1TB - Silver", color: "Silver", capacity: "36GB/1TB", price: 62990000, stock: 30, sku: "MBP14M3P-36-1TB-SL" },
-          { name: "MacBook Pro 14\" M3 Pro", variantName: "MacBook Pro 14\" M3 Pro 18GB/1TB - Space Black", color: "Space Black", capacity: "18GB/1TB", price: 54990000, stock: 40, sku: "MBP14M3P-18-1TB-SB" },
-          { name: "MacBook Pro 14\" M3 Pro", variantName: "MacBook Pro 14\" M3 Pro 36GB/512GB - Silver", color: "Silver", capacity: "36GB/512GB", price: 58990000, stock: 25, sku: "MBP14M3P-36-512-SL" }
-        ]
-      },
-      {
-        name: 'MacBook Pro 16" M3 Max',
-        description: 'MacBook Pro 16 inch với chip M3 Max, hiệu năng tối thượng cho các tác vụ nặng.',
-        category: macBookCategory ? macBookCategory._id : null,
+        name: 'MacBook Pro M3',
+        description: 'MacBook Pro M3 for professional performance.',
+        category: macBookProCategory ? macBookProCategory._id : null,
         isNewArrival: true,
         isBestSeller: true,
         image: 'https://cdn.tgdd.vn/Products/Images/44/327690/macbook-pro-16-inch-m3-max-64gb-1tb-40gpu-den-1-750x500.jpg',
         variants: [
-          { name: "MacBook Pro 16\" M3 Max", variantName: "MacBook Pro 16\" M3 Max 36GB/1TB - Space Black", color: "Space Black", capacity: "36GB/1TB", price: 74990000, stock: 25, sku: "MBP16M3M-36-1TB-SB" },
-          { name: "MacBook Pro 16\" M3 Max", variantName: "MacBook Pro 16\" M3 Max 48GB/2TB - Silver", color: "Silver", capacity: "48GB/2TB", price: 89990000, stock: 15, sku: "MBP16M3M-48-2TB-SL" },
-          { name: "MacBook Pro 16\" M3 Max", variantName: "MacBook Pro 16\" M3 Max 36GB/2TB - Space Black", color: "Space Black", capacity: "36GB/2TB", price: 82990000, stock: 20, sku: "MBP16M3M-36-2TB-SB" },
-          { name: "MacBook Pro 16\" M3 Max", variantName: "MacBook Pro 16\" M3 Max 48GB/1TB - Silver", color: "Silver", capacity: "48GB/1TB", price: 81990000, stock: 18, sku: "MBP16M3M-48-1TB-SL" }
+          { name: "MacBook Pro M3", variantName: "MacBook Pro 14-inch M3 8GB/512GB - Space Gray", color: "Space Gray", capacity: "8GB/512GB", price: 42990000, stock: 90, sku: "MBP-M3-14-8-512-SG" },
+          { name: "MacBook Pro M3", variantName: "MacBook Pro 14-inch M3 Pro 18GB/512GB - Space Black", color: "Space Black", capacity: "18GB/512GB", price: 49990000, stock: 70, sku: "MBP-M3P-14-18-512-SB" },
+          { name: "MacBook Pro M3", variantName: "MacBook Pro 16-inch M3 Max 36GB/1TB - Silver", color: "Silver", capacity: "36GB/1TB", price: 74990000, stock: 50, sku: "MBP-M3M-16-36-1TB-SV" }
+        ]
+      },
+      {
+        name: 'iMac 24-inch M3',
+        description: 'iMac 24-inch with M3 chip, all-in-one desktop.',
+        category: iMacCategory ? iMacCategory._id : null,
+        isNewArrival: false,
+        isBestSeller: false,
+        image: 'https://cdn.tgdd.vn/Products/Images/5698/327691/imac-24-inch-m3-16gb-512gb-10gpu-1-1-750x500.jpg',
+        variants: [
+          { name: "iMac 24-inch M3", variantName: "iMac 24-inch M3 8GB/256GB - Blue", color: "Blue", capacity: "8GB/256GB", price: 34990000, stock: 60, sku: "IMAC-M3-24-8-256-BL" },
+          { name: "iMac 24-inch M3", variantName: "iMac 24-inch M3 8GB/512GB - Green", color: "Green", capacity: "8GB/512GB", price: 37990000, stock: 40, sku: "IMAC-M3-24-8-512-GR" }
         ]
       },
 
-      // Asus Products (at least 3)
       {
-        name: 'Asus Zenbook S 13 OLED',
-        description: 'Asus Zenbook S 13 OLED mỏng nhẹ, màn hình đẹp.',
-        category: asusCategory ? asusCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: true,
-        image: 'https://dlcdnwebimgs.asus.com/gain/e75363c2-34ad-43b8-9400-1c0843f611b6/w800', // Placeholder image
-        variants: [
-          { name: "Zenbook S 13 OLED", variantName: "Zenbook S 13 OLED i7/16GB/512GB", color: "Xanh Đen", capacity: "16GB/512GB", price: 28990000, stock: 90, sku: "ASUS-ZS13-i7-16-512" },
-          { name: "Zenbook S 13 OLED", variantName: "Zenbook S 13 OLED i5/8GB/512GB", color: "Xanh Đen", capacity: "8GB/512GB", price: 25990000, stock: 100, sku: "ASUS-ZS13-i5-8-512" },
-          { name: "Zenbook S 13 OLED", variantName: "Zenbook S 13 OLED i7/16GB/1TB", color: "Xanh Đen", capacity: "16GB/1TB", price: 31990000, stock: 70, sku: "ASUS-ZS13-i7-16-1TB" },
-          { name: "Zenbook S 13 OLED", variantName: "Zenbook S 13 OLED i5/8GB/256GB", color: "Xanh Đen", capacity: "8GB/256GB", price: 23990000, stock: 120, sku: "ASUS-ZS13-i5-8-256" }
-        ]
-      },
-      {
-        name: 'Asus ROG Zephyrus G16',
-        description: 'Asus ROG Zephyrus G16 laptop gaming mạnh mẽ.',
-        category: asusCategory ? asusCategory._id : null,
+        name: 'Mac Mini M4',
+        description: 'Mac Mini M4 with incredible performance and versatility.',
+        category: macMiniCategory ? macMiniCategory._id : null,
         isNewArrival: true,
         isBestSeller: false,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/t/e/text_ng_n_25__2_28.png', // Placeholder image
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/331493/mac-mini-m4-16gb-256gb-bac-1-638660045913073298-750x500.jpg',
         variants: [
-          { name: "ROG Zephyrus G16", variantName: "ROG Zephyrus G16 i9/32GB/1TB RTX 4070", color: "Đen", capacity: "32GB/1TB", price: 45990000, stock: 60, sku: "ASUS-ROG-G16-i9-32-1TB-4070" },
-          { name: "ROG Zephyrus G16", variantName: "ROG Zephyrus G16 i7/16GB/512GB RTX 4060", color: "Đen", capacity: "16GB/512GB", price: 38990000, stock: 80, sku: "ASUS-ROG-G16-i7-16-512-4060" },
-          { name: "ROG Zephyrus G16", variantName: "ROG Zephyrus G16 i9/32GB/2TB RTX 4080", color: "Đen", capacity: "32GB/2TB", price: 55990000, stock: 40, sku: "ASUS-ROG-G16-i9-32-2TB-4080" },
-          { name: "ROG Zephyrus G16", variantName: "ROG Zephyrus G16 i7/16GB/1TB RTX 4070", color: "Trắng", capacity: "16GB/1TB", price: 41990000, stock: 50, sku: "ASUS-ROG-G16-i7-16-1TB-4070-T" }
+          { name: "Mac Mini M4", variantName: "Mac Mini M4 8GB/256GB", color: "Silver", capacity: "8GB/256GB", price: 15990000, stock: 100, sku: "MM-M2-8-256" },
+          { name: "Mac Mini M4", variantName: "Mac Mini M4 8GB/512GB", color: "Silver", capacity: "8GB/512GB", price: 18990000, stock: 80, sku: "MM-M2-8-512" },
+          { name: "Mac Mini M4", variantName: "Mac Mini M4 Pro 16GB/512GB", color: "Silver", capacity: "16GB/512GB", price: 25990000, stock: 60, sku: "MM-M2P-16-512" }
         ]
       },
       {
-        name: 'Asus Vivobook 15',
-        description: 'Asus Vivobook 15 laptop văn phòng giá rẻ.',
-        category: asusCategory ? asusCategory._id : null,
-        isNewArrival: false,
+        name: 'Mac Studio M3 Max',
+        description: 'Mac Studio M3 Max for ultimate creative power.',
+        category: macStudioCategory ? macStudioCategory._id : null,
+        isNewArrival: true,
         isBestSeller: true,
-        image: 'https://cdn2.fptshop.com.vn/unsafe/384x0/filters:format(webp):quality(75)/2023_4_13_638169958069065063_asus-vivobook-a1505va-l1113w-i5-13500h-bac-2.jpg', // Placeholder image
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/335383/mac-studio-m3-ultra-96gb-1tb-bac-1-638769618622556026-750x500.jpg',
         variants: [
-          { name: "Vivobook 15", variantName: "Vivobook 15 i5/8GB/512GB", color: "Đen", capacity: "8GB/512GB", price: 15990000, stock: 150, sku: "ASUS-VB15-i5-8-512" },
-          { name: "Vivobook 15", variantName: "Vivobook 15 i3/8GB/256GB", color: "Bạc", capacity: "8GB/256GB", price: 12990000, stock: 180, sku: "ASUS-VB15-i3-8-256" },
-          { name: "Vivobook 15", variantName: "Vivobook 15 i5/16GB/512GB", color: "Xanh", capacity: "16GB/512GB", price: 17990000, stock: 120, sku: "ASUS-VB15-i5-16-512-X" },
-          { name: "Vivobook 15", variantName: "Vivobook 15 i3/4GB/256GB", color: "Đen", capacity: "4GB/256GB", price: 11990000, stock: 200, sku: "ASUS-VB15-i3-4-256-D" }
+          { name: "Mac Studio M3 Max", variantName: "Mac Studio M3 Max 32GB/512GB", color: "Silver", capacity: "32GB/512GB", price: 54990000, stock: 40, sku: "MS-M2M-32-512" },
+          { name: "Mac Studio M3 Max", variantName: "Mac Studio M2 Ultra 64GB/1TB", color: "Silver", capacity: "64GB/1TB", price: 84990000, stock: 25, sku: "MS-M2U-64-1TB" },
+          { name: "Mac Studio M3 Max", variantName: "Mac Studio M2 Ultra 128GB/2TB", color: "Silver", capacity: "128GB/2TB", price: 109990000, stock: 15, sku: "MS-M2U-128-2TB" }
+        ]
+      },
+      {
+        name: 'Mac Pro M2 Ultra',
+        description: 'Mac Pro M2 Ultra, the most powerful Mac ever.',
+        category: macProCategory ? macProCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: false,
+        image: 'https://tse2.mm.bing.net/th/id/OIP.p2cSRuf_zF_Ww71Ps-HiZgHaHa?r=0&rs=1&pid=ImgDetMain',
+        variants: [
+          { name: "Mac Pro M2 Ultra", variantName: "Mac Pro M2 Ultra 64GB/1TB (Tower)", color: "Silver", capacity: "64GB/1TB", price: 169990000, stock: 10, sku: "MP-M2U-64-1TB-T" },
+          { name: "Mac Pro M2 Ultra", variantName: "Mac Pro M2 Ultra 128GB/2TB (Rack)", color: "Silver", capacity: "128GB/2TB", price: 199990000, stock: 8, sku: "MP-M2U-128-2TB-R" },
+          { name: "Mac Pro M2 Ultra", variantName: "Mac Pro M2 Ultra 192GB/4TB (Tower)", color: "Silver", capacity: "192GB/4TB", price: 249990000, stock: 5, sku: "MP-M2U-192-4TB-T" }
         ]
       },
 
-      // HP Products (at least 3)
       {
-        name: 'HP Spectre x360 14',
-        description: 'HP Spectre x360 14 laptop 2-in-1 cao cấp.',
-        category: hpCategory ? hpCategory._id : null,
-        isNewArrival: true,
-        isBestSeller: true,
-        image: 'https://cdn2.fptshop.com.vn/unsafe/384x0/filters:format(webp):quality(75)/2024_6_24_638548335557426654_a19blpa.jpg', // Placeholder image
-        variants: [
-          { name: "Spectre x360 14", variantName: "Spectre x360 14 i7/16GB/1TB", color: "Đen", capacity: "16GB/1TB", price: 35990000, stock: 70, sku: "HP-SPX14-i7-16-1TB" },
-          { name: "Spectre x360 14", variantName: "Spectre x360 14 i5/8GB/512GB", color: "Bạc", capacity: "8GB/512GB", price: 30990000, stock: 90, sku: "HP-SPX14-i5-8-512" },
-          { name: "Spectre x360 14", variantName: "Spectre x360 14 i7/16GB/512GB", color: "Đen", capacity: "16GB/512GB", price: 33990000, stock: 80, sku: "HP-SPX14-i7-16-512" },
-          { name: "Spectre x360 14", variantName: "Spectre x360 14 i5/8GB/1TB", color: "Bạc", capacity: "8GB/1TB", price: 32990000, stock: 60, sku: "HP-SPX14-i5-8-1TB" }
-        ]
-      },
-      {
-        name: 'HP Envy x360 15',
-        description: 'HP Envy x360 15 laptop đa năng.',
-        category: hpCategory ? hpCategory._id : null,
+        name: 'Mac Mini M4',
+        description: 'Mac Mini M4 with incredible performance and versatility.',
+        category: macMiniCategory ? macMiniCategory._id : null,
         isNewArrival: true,
         isBestSeller: false,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/_/0/_0000_6453189_sd.jpg', // Placeholder image
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/331493/mac-mini-m4-16gb-256gb-bac-1-638660045913073298-750x500.jpg',
         variants: [
-          { name: "Envy x360 15", variantName: "Envy x360 15 i5/8GB/512GB", color: "Bạc", capacity: "8GB/512GB", price: 22990000, stock: 100, sku: "HP-ENVY15-i5-8-512" },
-          { name: "Envy x360 15", variantName: "Envy x360 15 i7/16GB/512GB", color: "Đen", capacity: "16GB/512GB", price: 26990000, stock: 80, sku: "HP-ENVY15-i7-16-512" },
-          { name: "Envy x360 15", variantName: "Envy x360 15 i5/8GB/1TB", color: "Bạc", capacity: "8GB/1TB", price: 24990000, stock: 90, sku: "HP-ENVY15-i5-8-1TB" },
-          { name: "Envy x360 15", variantName: "Envy x360 15 i7/16GB/1TB", color: "Đen", capacity: "16GB/1TB", price: 28990000, stock: 70, sku: "HP-ENVY15-i7-16-1TB" }
+          { name: "Mac Mini M4", variantName: "Mac Mini M4 8GB/256GB", color: "Silver", capacity: "8GB/256GB", price: 15990000, stock: 100, sku: "MM-M2-8-256" },
+          { name: "Mac Mini M4", variantName: "Mac Mini M4 8GB/512GB", color: "Silver", capacity: "8GB/512GB", price: 18990000, stock: 80, sku: "MM-M2-8-512" },
+          { name: "Mac Mini M4", variantName: "Mac Mini M4 Pro 16GB/512GB", color: "Silver", capacity: "16GB/512GB", price: 25990000, stock: 60, sku: "MM-M2P-16-512" }
         ]
       },
       {
-        name: 'HP Pavilion 15',
-        description: 'HP Pavilion 15 laptop phổ thông.',
-        category: hpCategory ? hpCategory._id : null,
+        name: 'Mac Pro M2 Ultra',
+        description: 'Mac Pro M2 Ultra, the most powerful Mac ever.',
+        category: macProCategory ? macProCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: false,
+        image: 'https://tse2.mm.bing.net/th/id/OIP.p2cSRuf_zF_Ww71Ps-HiZgHaHa?r=0&rs=1&pid=ImgDetMain',
+        variants: [
+          { name: "Mac Pro M2 Ultra", variantName: "Mac Pro M2 Ultra 64GB/1TB (Tower)", color: "Silver", capacity: "64GB/1TB", price: 169990000, stock: 10, sku: "MP-M2U-64-1TB-T" },
+          { name: "Mac Pro M2 Ultra", variantName: "Mac Pro M2 Ultra 128GB/2TB (Rack)", color: "Silver", capacity: "128GB/2TB", price: 199990000, stock: 8, sku: "MP-M2U-128-2TB-R" },
+          { name: "Mac Pro M2 Ultra", variantName: "Mac Pro M2 Ultra 192GB/4TB (Tower)", color: "Silver", capacity: "192GB/4TB", price: 249990000, stock: 5, sku: "MP-M2U-192-4TB-T" }
+        ]
+      },
+
+      // iPad Products
+      {
+        name: 'iPad Pro M4',
+        description: 'iPad Pro with M4 chip, incredibly thin and powerful.',
+        category: iPadProCategory ? iPadProCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: true,
+        image: 'https://cdn.tgdd.vn/Products/Images/522/325513/ipad-pro-11-inch-m4-wifi-black-1-750x500.jpg',
+        variants: [
+          { name: "iPad Pro M4", variantName: "iPad Pro 11-inch M4 256GB - Space Gray", color: "Space Gray", capacity: "256GB", price: 28990000, stock: 120, sku: "IPADPRO-M4-11-256-SG" },
+          { name: "iPad Pro M4", variantName: "iPad Pro 13-inch M4 512GB - Silver", color: "Silver", capacity: "512GB", price: 35990000, stock: 90, sku: "IPADPRO-M4-13-512-SV" }
+        ]
+      },
+      {
+        name: 'iPad Air M3',
+        description: 'iPad Air with M2 chip, powerful and versatile.',
+        category: iPadAirCategory ? iPadAirCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: false,
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/522/335279/ipad-air-m3-13-inch-5g-blue-1-638772001135851250-750x500.jpg',
+        variants: [
+          { name: "iPad Air M3", variantName: "iPad Air 11-inch M2 128GB - Blue", color: "Blue", capacity: "128GB", price: 18990000, stock: 180, sku: "IPADAIR-M2-11-128-BL" },
+          { name: "iPad Air M3", variantName: "iPad Air 13-inch M2 256GB - Starlight", color: "Starlight", capacity: "256GB", price: 22990000, stock: 140, sku: "IPADAIR-M2-13-256-SL" }
+        ]
+      },
+      {
+        name: 'iPad mini 7',
+        description: 'iPad mini 7, compact and powerful.',
+        category: iPadMiniCategory ? iPadMiniCategory._id : null,
         isNewArrival: false,
         isBestSeller: true,
-        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/t/e/text_ng_n_11__4_5.png', // Placeholder image
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/522/331229/ipad-mini-7-wifi-blue-1-638651175208934105-750x500.jpg',
         variants: [
-          { name: "Pavilion 15", variantName: "Pavilion 15 i5/8GB/256GB", color: "Vàng", capacity: "8GB/256GB", price: 14990000, stock: 180, sku: "HP-PAV15-i5-8-256" },
-          { name: "Pavilion 15", variantName: "Pavilion 15 i3/4GB/256GB", color: "Bạc", capacity: "4GB/256GB", price: 11990000, stock: 200, sku: "HP-PAV15-i3-4-256" },
-          { name: "Pavilion 15", variantName: "Pavilion 15 i5/8GB/512GB", color: "Đỏ", capacity: "8GB/512GB", price: 15990000, stock: 150, sku: "HP-PAV15-i5-8-512-Do" },
-          { name: "Pavilion 15", variantName: "Pavilion 15 i3/8GB/256GB", color: "Xanh", capacity: "8GB/256GB", price: 12990000, stock: 170, sku: "HP-PAV15-i3-8-256-X" }
+          { name: "iPad mini 7", variantName: "iPad mini 7 64GB - Space Gray", color: "Space Gray", capacity: "64GB", price: 12990000, stock: 200, sku: "IPADMINI-64-SG" },
+          { name: "iPad mini 7", variantName: "iPad mini 7 256GB - Pink", color: "Pink", capacity: "256GB", price: 16990000, stock: 150, sku: "IPADMINI-256-PK" }
+        ]
+      },
+
+      // iPhone Products
+      {
+        name: 'iPhone 16 Pro Max',
+        description: 'iPhone 16 Pro Max with A17 Pro chip and Pro camera system.',
+        category: iPhoneProMaxCategory ? iPhoneProMaxCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: true,
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/329149/iphone-16-pro-max-titan-sa-mac-1-638638962337813406-750x500.jpg',
+        variants: [
+          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 256GB - Natural Titanium", color: "Natural Titanium", capacity: "256GB", price: 33990000, stock: 100, sku: "IP15PM-256-NT" },
+          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 512GB - Blue Titanium", color: "Blue Titanium", capacity: "512GB", price: 38990000, stock: 70, sku: "IP15PM-512-BT" },
+          { name: "iPhone 16 Pro Max", variantName: "iPhone 16 Pro Max 1TB - Black Titanium", color: "Black Titanium", capacity: "1TB", price: 44990000, stock: 40, sku: "IP15PM-1TB-BLT" }
+        ]
+      },
+      {
+        name: 'iPhone 16 Pro',
+        description: 'iPhone 16 Pro with A17 Pro chip and Pro camera system.',
+        category: iPhoneProCategory ? iPhoneProCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: true,
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/329143/iphone-16-pro-titan-trang-1-638638981055641372-750x500.jpg',
+        variants: [
+          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 128GB - Natural Titanium", color: "Natural Titanium", capacity: "128GB", price: 28990000, stock: 120, sku: "IP15P-128-NT" },
+          { name: "iPhone 16 Pro", variantName: "iPhone 16 Pro 256GB - Blue Titanium", color: "Blue Titanium", capacity: "256GB", price: 31990000, stock: 90, sku: "IP15P-256-BT" }
+        ]
+      },
+      {
+        name: 'iPhone 16',
+        description: 'iPhone 16 with Dynamic Island and A16 Bionic chip.',
+        category: iPhoneStandardCategory ? iPhoneStandardCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: false,
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/329138/iphone-16-plus-den-1-638639096261944470-750x500.jpg',
+        variants: [
+          { name: "iPhone 16", variantName: "iPhone 16 128GB - Pink", color: "Pink", capacity: "128GB", price: 22990000, stock: 150, sku: "IP15-128-PK" },
+          { name: "iPhone 16", variantName: "iPhone 16 256GB - Green", color: "Green", capacity: "256GB", price: 25990000, stock: 120, sku: "IP15-256-GR" }
+        ]
+      },
+      {
+        name: 'iPhone SE 2022`',
+        description: 'iPhone SE 2022, powerful and affordable.',
+        category: iPhoneSECategory ? iPhoneSECategory._id : null,
+        isNewArrival: false,
+        isBestSeller: true,
+        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/1/_/1_359_1.png',
+        variants: [
+          { name: "iPhone SE 2022", variantName: "iPhone SE 2022 64GB - Midnight", color: "Midnight", capacity: "64GB", price: 10990000, stock: 200, sku: "IPSE-64-MN" },
+          { name: "iPhone SE 2022", variantName: "iPhone SE 2022 128GB - Starlight", color: "Starlight", capacity: "128GB", price: 12990000, stock: 180, sku: "IPSE-128-SL" }
+        ]
+      },
+
+      // Watch Products
+      {
+        name: 'Apple Watch Ultra 2',
+        description: 'Apple Watch Ultra 2 for extreme adventures.',
+        category: appleWatchUltraCategory ? appleWatchUltraCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: true,
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/7077/329719/apple-watch-ultra-2-lte-49mm-vien-titanium-day-alpine-1-638616632586155895-750x500.jpg',
+        variants: [
+          { name: "Apple Watch Ultra 2", variantName: "Apple Watch Ultra 2 - Alpine Loop Blue", color: "Blue", capacity: "GPS + Cellular", price: 21990000, stock: 80, sku: "AWU2-AL-BL" },
+          { name: "Apple Watch Ultra 2", variantName: "Apple Watch Ultra 2 - Trail Loop Green", color: "Green", capacity: "GPS + Cellular", price: 21990000, stock: 60, sku: "AWU2-TL-GR" }
+        ]
+      },
+      {
+        name: 'Apple Watch Series 10',
+        description: 'Apple Watch Series 10, smarter, brighter, mightier.',
+        category: appleWatchSeriesCategory ? appleWatchSeriesCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: false,
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/7077/329155/apple-watch-s10-den-1-638616621929799246-750x500.jpg',
+        variants: [
+          { name: "Apple Watch Series 10", variantName: "Apple Watch Series 10 41mm - Midnight Aluminum", color: "Midnight", capacity: "GPS", price: 11990000, stock: 150, sku: "AWS9-41-MN" },
+          { name: "Apple Watch Series 10", variantName: "Apple Watch Series 10 45mm - Starlight Aluminum", color: "Starlight", capacity: "GPS + Cellular", price: 14990000, stock: 100, sku: "AWS9-45-SL" }
+        ]
+      },
+
+      // Vision Products
+      {
+        name: 'Apple Vision Pro',
+        description: 'Apple Vision Pro, spatial computer.',
+        category: visionProCategory ? visionProCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: true,
+        image: 'https://cdn.tgdd.vn/Products/Images/13098/322918/apple-vision-pro-1-750x500.jpg',
+        variants: [
+          { name: "Apple Vision Pro", variantName: "Apple Vision Pro 256GB", color: "Space Gray", capacity: "256GB", price: 89990000, stock: 20, sku: "AVP-256" },
+          { name: "Apple Vision Pro", variantName: "Apple Vision Pro 512GB", color: "Space Gray", capacity: "512GB", price: 95990000, stock: 15, sku: "AVP-512" }
+        ]
+      },
+
+      // AirPods Products
+      {
+        name: 'AirPods Pro (2nd Gen)',
+        description: 'AirPods Pro (2nd Gen) with Active Noise Cancellation.',
+        category: airPodsProCategory ? airPodsProCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: true,
+        image: 'https://cdn.tgdd.vn/Products/Images/54/315014/tai-nghe-bluetooth-airpods-pro-2nd-gen-usb-c-charge-apple-1-750x500.jpg',
+        variants: [
+          { name: "AirPods Pro (2nd Gen)", variantName: "AirPods Pro (2nd Gen) with MagSafe Charging Case (USB-C)", color: "White", capacity: "N/A", price: 6990000, stock: 250, sku: "APP2-USBC" }
+        ]
+      },
+      {
+        name: 'AirPods Max',
+        description: 'AirPods Max, over-ear headphones with high-fidelity audio.',
+        category: airPodsMaxCategory ? airPodsMaxCategory._id : null,
+        isNewArrival: false,
+        isBestSeller: false,
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/54/329161/airpods-max-cong-usb-c-den-1-638616502635375739-750x500.jpg',
+        variants: [
+          { name: "AirPods Max", variantName: "AirPods Max - Space Gray", color: "Space Gray", capacity: "N/A", price: 13990000, stock: 100, sku: "APMAX-SG" },
+          { name: "AirPods Max", variantName: "AirPods Max - Silver", color: "Silver", capacity: "N/A", price: 13990000, stock: 80, sku: "APMAX-SV" }
+        ]
+      },
+      {
+        name: 'AirPods (3rd Gen)',
+        description: 'AirPods (3rd Gen) with Spatial Audio.',
+        category: airPodsStandardCategory ? airPodsStandardCategory._id : null,
+        isNewArrival: false,
+        isBestSeller: false,
+        image: 'https://cdn.tgdd.vn/Products/Images/54/315014/tai-nghe-bluetooth-airpods-pro-2nd-gen-usb-c-charge-apple-1-750x500.jpg',
+        variants: [
+          { name: "AirPods (3rd Gen)", variantName: "AirPods (3rd Gen) with Lightning Charging Case", color: "White", capacity: "N/A", price: 4990000, stock: 200, sku: "AP3-LC" }
+        ]
+      },
+
+      // RV&Home Products
+      {
+        name: 'Apple HomePod (2nd Gen)',
+        description: 'Apple HomePod (2nd Gen), powerful smart speaker.',
+        category: homePodCategory ? homePodCategory._id : null,
+        isNewArrival: true,
+        isBestSeller: true,
+        image: 'https://cdsassets.apple.com/live/7WUAS350/images/homepod/2023-homepod-colors.png',
+        variants: [
+          { name: "HomePod (2nd Gen)", variantName: "HomePod (2nd Gen) - Midnight", color: "Midnight", capacity: "N/A", price: 7990000, stock: 100, sku: "HP2-MN" },
+          { name: "HomePod (2nd Gen)", variantName: "HomePod (2nd Gen) - White", color: "White", capacity: "N/A", price: 7990000, stock: 90, sku: "HP2-WH" }
+        ]
+      },
+      {
+        name: 'Apple TV 4K',
+        description: 'Apple TV 4K, the best of TV, together with your Apple devices and services.',
+        category: appleTVCategory ? appleTVCategory._id : null,
+        isNewArrival: false,
+        isBestSeller: true,
+        image: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/a/p/apple-tv-4k-hero-select-202104.jpg',
+        variants: [
+          { name: "Apple TV 4K", variantName: "Apple TV 4K (Wi-Fi) 64GB", color: "Black", capacity: "64GB", price: 3990000, stock: 150, sku: "ATV4K-64" },
+          { name: "Apple TV 4K", variantName: "Apple TV 4K (Wi-Fi + Ethernet) 128GB", color: "Black", capacity: "128GB", price: 4990000, stock: 120, sku: "ATV4K-128" }
         ]
       }
     ];

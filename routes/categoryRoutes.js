@@ -225,7 +225,7 @@ router.post('/', auth, adminAuth, upload.single('image'), createCategory);
 /**
  * @swagger
  * /api/categories/{id}:
- *   put:
+ *   patch:
  *     summary: Update a category
  *     tags: [Categories]
  *     security:
@@ -265,7 +265,7 @@ router.post('/', auth, adminAuth, upload.single('image'), createCategory);
  *       404:
  *         description: Category not found
  */
-router.put('/:id', auth, adminAuth, upload.single('image'), updateCategory);
+router.patch('/:id', auth, adminAuth, upload.single('image'), updateCategory);
 
 /**
  * @swagger
