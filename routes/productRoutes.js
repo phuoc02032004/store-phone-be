@@ -208,7 +208,7 @@ router.get('/', getProducts);
  *       500:
  *         description: Server error
  */
-router.get('/category/:category', getProductsByCategory);
+router.get('/category/:categoryId', getProductsByCategory);
 
 /**
  * @swagger

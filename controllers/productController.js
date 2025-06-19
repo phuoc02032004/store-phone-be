@@ -336,24 +336,72 @@ exports.updateProduct = async (req, res) => {
 // @access  Public
 exports.getProductsByCategory = async (req, res) => {
   try {
-    const { category: categoryId } = req.params;
+    const categoryId = req.params.categoryId; // Changed from req.params.id to req.params.categoryId
+    console.log('Received categoryId:', categoryId, 'Type:', typeof categoryId);
 
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
       return res.status(400).json({ message: 'ID danh mục không hợp lệ.' });
     }
 
-    const categoryExists = await Category.findById(categoryId);
-    if (!categoryExists) {
+    const targetCategory = await Category.findById(categoryId);
+    if (!targetCategory) {
       return res.status(404).json({ message: 'Danh mục không tìm thấy.' });
     }
 
-    const products = await Product.find({ category: categoryId }).populate('category', 'name');
-    
+    let categoryIdsToSearch = [targetCategory._id];    // Find all descendant categories
+    const descendantCategories = await Category.find({
+      $or: [
+        { 'ancestors._id': targetCategory._id }, // Categories that have this category as ancestor
+        { parent: targetCategory._id } // Direct children of this category
+      ]
+    }).select('_id name level');
+
+    // Add all descendant category IDs to the search list
+    categoryIdsToSearch = categoryIdsToSearch.concat(descendantCategories.map(cat => cat._id));
+
+    // Find all products in the target category and its descendants
+    const products = await Product.find({ 
+      category: { $in: categoryIdsToSearch } 
+    }).populate({
+      path: 'category',
+      select: 'name level parent ancestors'
+    });
+
     if (!products || products.length === 0) {
-      return res.status(404).json({ message: 'Không tìm thấy sản phẩm nào cho danh mục này.' });
+      return res.status(404).json({ 
+        message: 'Không tìm thấy sản phẩm nào cho danh mục này hoặc các danh mục con của nó.',
+        categoryInfo: {
+          id: targetCategory._id,
+          name: targetCategory.name,
+          level: targetCategory.level
+        }
+      });
     }
 
-    res.json(products);
+    // Group products by their immediate category
+    const groupedProducts = products.reduce((acc, product) => {
+      const categoryId = product.category._id.toString();
+      if (!acc[categoryId]) {
+        acc[categoryId] = {
+          categoryName: product.category.name,
+          categoryLevel: product.category.level,
+          products: []
+        };
+      }
+      acc[categoryId].products.push(product);
+      return acc;
+    }, {});
+
+    res.json({
+      category: {
+        id: targetCategory._id,
+        name: targetCategory.name,
+        level: targetCategory.level
+      },
+      productsCount: products.length,
+      categoriesCount: Object.keys(groupedProducts).length,
+      groupedProducts
+    });
   } catch (error) {
     console.error('Error in getProductsByCategory:', error.message);
     res.status(500).json({ message: 'Lỗi máy chủ' });
